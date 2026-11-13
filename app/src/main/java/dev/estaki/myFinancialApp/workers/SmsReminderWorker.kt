@@ -5,17 +5,13 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import dev.estaki.myFinancialApp.NotificationHandler
 
-class SmsReminderWorker(private val context: Context, workerParams: WorkerParameters) :
+class SmsReminderWorker(context: Context, workerParams: WorkerParameters) :
     Worker(context, workerParams) {
     override fun doWork(): Result {
-        val smsSender = inputData.getString("smsSender") ?: return Result.failure()
-        val smsMessage = inputData.getString("smsMessage") ?: return Result.failure()
         NotificationHandler.showSmsNotification(
-            context,
+            applicationContext,
             title = "یادآوری تراکنش بانکی",
-            message = "اگه اشتباه نکنم چندساعت پیش تراکنشی داشتی که بهتره یادداشت کنی که برای چی بوده!",
-            smsSender,
-            smsMessage
+            message = "اگر تراکنشی انجام داده‌اید، جزئیات آن را در برنامه بررسی کنید."
         )
         return Result.success()
     }

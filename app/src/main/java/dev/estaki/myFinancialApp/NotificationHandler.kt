@@ -14,52 +14,37 @@ import dev.estaki.myFinancialApp.presentation.main.MainActivity
 object NotificationHandler {
     private const val CHANNEL_ID = "bank_sms_channel"
 
-    fun showSmsNotification(
-        context: Context,
-        title: String,
-        message: String,
-        smsSender: String,
-        smsBody: String
-
-    ){
+    fun showSmsNotification(context: Context, title: String, message: String) {
         if (ActivityCompat.checkSelfPermission(
                 context,
                 android.Manifest.permission.POST_NOTIFICATIONS
-            ) == PackageManager.PERMISSION_GRANTED
-        ){
-            val intent = Intent(context, MainActivity::class.java)
-            val pendingIntent = PendingIntent.getActivity(
-                context,
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) return
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notificationManager.createNotificationChannel(
+                NotificationChannel(CHANNEL_ID, "Bank SMS Notifications", NotificationManager.IMPORTANCE_HIGH)
             )
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
-                val channel = NotificationChannel(
-                    CHANNEL_ID,
-                    "Bank SMS Notifications",
-                    NotificationManager.IMPORTANCE_HIGH
-                )
-                notificationManager.createNotificationChannels(listOf(channel))
-            }
-
-            var body = "فرستنده اش $smsSender هست\n "
-            body = body.plus("\n")
-            body = body.plus(smsBody)
-            val notification = NotificationCompat.Builder(context,CHANNEL_ID)
-                .setContentTitle(title)
-                .setSmallIcon(R.drawable.monify)
-                .setContentText(message)
-                .setStyle(NotificationCompat.BigTextStyle().bigText(body))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(pendingIntent)
-                .setAutoCancel(true) // بستن اعلان هنگام کلیک
-                .build()
-
-            // نمایش نوتیفیکیشن
-            notificationManager.notify(1, notification)
         }
+
+        val intent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle(title)
+            .setSmallIcon(R.drawable.monify)
+            .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify((System.currentTimeMillis() and 0x7fffffff).toInt(), notification)
     }
 }

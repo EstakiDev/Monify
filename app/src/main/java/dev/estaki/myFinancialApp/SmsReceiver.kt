@@ -48,23 +48,17 @@ class SmsReceiver : BroadcastReceiver() {
                 NotificationHandler.showSmsNotification(
                     appContext,
                     title = "تراکنش بانکی جدید",
-                    message = "برای مشاهده جزئیات تراکنش وارد برنامه شوید.",
-                    smsSender = sender,
-                    smsBody = body
+                    message = "برای مشاهده جزئیات، برنامه را باز کنید."
                 )
                 WorkersEngine.scheduleSmsRemindersWithWorkManager(
                     duration = 4,
                     timeUnit = TimeUnit.HOURS,
-                    context = appContext,
-                    smsSender = sender,
-                    smsMessage = body
+                    context = appContext
                 )
                 WorkersEngine.scheduleSmsRemindersWithWorkManager(
                     duration = 12,
                     timeUnit = TimeUnit.HOURS,
-                    context = appContext,
-                    smsSender = sender,
-                    smsMessage = body
+                    context = appContext
                 )
             } catch (exception: Exception) {
                 Timber.e(exception, "Unable to process incoming SMS")
