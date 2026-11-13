@@ -124,7 +124,7 @@ fun SplashScreenUi(
         ActivityResultContracts.RequestMultiplePermissions(),
         onResult = {
             mustGetPermissions = false
-            if (it.all { map -> map.value == true }) {
+            if (permissions.all { permission -> it[permission] == true }) {
                 onAction.invoke(SplashScreenActions.ExtractSmsFromContentResolver(context.contentResolver))
             } else {
                 checkShouldShowRequestPermissionRationale(activity, permissions) {
@@ -160,7 +160,8 @@ fun SplashScreenUi(
                         requestPermissionLauncher.launch(
                             arrayOf(
                                 Manifest.permission.READ_SMS,
-                                Manifest.permission.RECEIVE_SMS
+                                Manifest.permission.RECEIVE_SMS,
+                                Manifest.permission.POST_NOTIFICATIONS
                             )
                         )
                     }
