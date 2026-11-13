@@ -21,6 +21,7 @@ import dev.estaki.myFinancialApp.presentation.states.SplashScreenState
 import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -65,39 +66,43 @@ class SplashScreenViewModel @Inject constructor(
 
 
     private suspend fun readSms(contentResolver: ContentResolver) {
-        withContext(Dispatchers.Default) {
-            val smsList = ArrayList<SmsRawModel>()
-            val cursor = contentResolver.query(
+        try {
+            val smsList = withContext(Dispatchers.IO) {
+                val messages = ArrayList<SmsRawModel>()
+                contentResolver.query(
                 Telephony.Sms.CONTENT_URI,
-                null,
-                null,
-                null,
-                Telephony.Sms.DEFAULT_SORT_ORDER
-            )
-            cursor?.let {
-                if (it.moveToFirst()) {
-                    do {
-                        val address =
-                            cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS))
-                        val body =
-                            cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.BODY))
-                        val date =
-                            cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms.DATE))
-                        val id = cursor.getString(cursor.getColumnIndexOrThrow(Telephony.Sms._ID))
-
-                        smsList.add(SmsRawModel(id, address, body, date, date))
-                    } while (cursor.moveToNext())
-                    correctDate(smsList)
-                    val list = SmsProcessor(smsList).execute()?.toMutableList() ?: emptyList()
-                    cacheSmsToDb(list.toMutableList())
-                    cacheBankAccountToDb()
-                    onAction(SplashScreenActions.MustGoToMainScreen)
-                } else {
-                    onAction(SplashScreenActions.MustGoToMainScreen)
+                    arrayOf(Telephony.Sms._ID, Telephony.Sms.ADDRESS, Telephony.Sms.BODY, Telephony.Sms.DATE),
+                    null,
+                    null,
+                    Telephony.Sms.DEFAULT_SORT_ORDER
+                )?.use { cursor ->
+                    val idColumn = cursor.getColumnIndexOrThrow(Telephony.Sms._ID)
+                    val addressColumn = cursor.getColumnIndexOrThrow(Telephony.Sms.ADDRESS)
+                    val bodyColumn = cursor.getColumnIndexOrThrow(Telephony.Sms.BODY)
+                    val dateColumn = cursor.getColumnIndexOrThrow(Telephony.Sms.DATE)
+                    while (cursor.moveToNext()) {
+                        val date = cursor.getString(dateColumn)
+                        messages += SmsRawModel(
+                            _id = cursor.getString(idColumn),
+                            senderName = cursor.getString(addressColumn).orEmpty(),
+                            description = cursor.getString(bodyColumn).orEmpty(),
+                            receiveDate = date,
+                            receiveDateTime = date
+                        )
+                    }
                 }
-                it.close()
+                messages
             }
 
+            correctDate(smsList)
+            cacheSmsToDb(SmsProcessor(smsList).execute().toMutableList())
+            cacheBankAccountToDb()
+            onAction(SplashScreenActions.MustGoToMainScreen)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Exception) {
+            Timber.e(exception, "Unable to synchronize bank SMS messages")
+            onAction(SplashScreenActions.MustGoToMainScreen)
         }
     }
 
