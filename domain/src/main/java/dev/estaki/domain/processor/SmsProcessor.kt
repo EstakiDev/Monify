@@ -16,6 +16,7 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
         val body = SmsValidator.normalize(raw.description)
         val labeledAmount = labeledAmountRegex.find(body)?.groupValues?.get(1)
             ?: directionalAmountRegex.find(body)?.groupValues?.get(1)
+            ?: englishAmountRegex.find(body)?.groupValues?.get(1)
         val amountMatch = labeledAmount?.let { amountRegex.find(it) }
             ?: amountRegex.findAll(body).firstOrNull { match ->
                 val contextBefore = body.substring(maxOf(0, match.range.first - 14), match.range.first)
@@ -24,13 +25,15 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
             }
             ?: return null
         val amount = amountMatch.value.replace(Regex("[,،٬]"), "")
-        val type = if (withdrawalWords.any(body::contains) || amountMatch.range.first > 0 && body[amountMatch.range.first - 1] == '-') {
+        val type = if (withdrawalWords.any(body::contains) || englishWithdrawalWords.any(body::contains) || amountMatch.range.first > 0 && body[amountMatch.range.first - 1] == '-') {
             TransactionType.WITHDRAW
         } else {
             TransactionType.DEPOSIT
         }
-        val balance = balanceRegex.find(body)?.groupValues?.getOrNull(1)?.replace(Regex("[,،٬]"), "") ?: "-"
-        val account = accountRegex.find(body)?.groupValues?.getOrNull(1)?.ifBlank { "-" } ?: "-"
+        val balance = (balanceRegex.find(body)?.groupValues?.getOrNull(1)
+            ?: englishBalanceRegex.find(body)?.groupValues?.getOrNull(1))?.replace(Regex("[,،٬]"), "") ?: "-"
+        val account = (accountRegex.find(body)?.groupValues?.getOrNull(1)
+            ?: englishAccountRegex.find(body)?.groupValues?.getOrNull(1))?.ifBlank { "-" } ?: "-"
         val time = timeRegex.find(body)?.value ?: "-"
         val bankName = raw.senderName.takeIf { it.any(Char::isLetter) } ?: body.lineSequence().firstOrNull().orEmpty()
         val epoch = raw.receiveDateTime.toLongOrNull() ?: 0L
@@ -59,6 +62,10 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
     }
 
     private companion object {
+        val englishWithdrawalWords = listOf("withdraw", "purchase", "payment", "debited", "debit")
+        val englishAmountRegex = Regex("(?:amount|deposit|withdrawal|purchase|payment)\\s*[:：]?\\s*([\\d,]+)")
+        val englishBalanceRegex = Regex("balance\\s*[:：]?\\s*([\\d,]+)")
+        val englishAccountRegex = Regex("(?:card|account)\\s*[:：]?\\s*([\\d* -]{4,})")
         val withdrawalWords = listOf("برداشت", "خرید", "پرداخت", "انتقال از")
         val amountRegex = Regex("(?<!\\d)\\d{1,3}(?:[,،٬]\\d{3})+(?!\\d)|(?<!\\d)\\d{4,}(?!\\d)")
         val labeledAmountRegex = Regex("مبلغ(?:\\s*تراکنش)?\\s*[:：]?\\s*([\\d,،٬]+)")
