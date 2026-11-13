@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.estaki.domain.error.MyCustomSnackBarType
-import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.models.CategoryModel
 import dev.estaki.domain.usecases.CacheCategoryToDb
 import dev.estaki.domain.usecases.GetAllBankCardFromTbBankCard
@@ -37,8 +36,6 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val _mainScreenState = MutableStateFlow<MainScreenState>(MainScreenState())
     val mainScreenState = _mainScreenState.asStateFlow()
-
-    private lateinit var listOfBankAccountNumber: List<BankCardModel>
 
     init {
         getAllCategory()

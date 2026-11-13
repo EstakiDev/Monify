@@ -130,8 +130,9 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
                         type = NavType.LongType
                     }
                 )) { backStackEntry ->
+                val smsId = backStackEntry.arguments?.getLong("smsId") ?: return@composable
                 TransactionDetail(
-                    smsId = backStackEntry.arguments?.getLong("smsId")!!,
+                    smsId = smsId,
                     navController = navController
                 ) {
                     topAppbarState = it
@@ -148,9 +149,12 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
                         type = NavType.IntType
                     }
                 )) { backStackEntry ->
+                val creditAccountNumber = backStackEntry.arguments?.getString("creditAccountNumber")
+                    ?: return@composable
+                val position = backStackEntry.arguments?.getInt("position") ?: return@composable
                 AddOrEditCreditCardScreen(
-                    creditAccountNumber = backStackEntry.arguments?.getString("creditAccountNumber")!!,
-                    position = backStackEntry.arguments?.getInt("position")!!,
+                    creditAccountNumber = creditAccountNumber,
+                    position = position,
                     navController = navController
                 ) {
                     topAppbarState = it

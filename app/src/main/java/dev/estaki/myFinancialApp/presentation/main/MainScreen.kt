@@ -56,6 +56,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndicator
 import dev.estaki.domain.error.MyCustomSnackBarType
 import dev.estaki.domain.models.BankCardModel
@@ -77,7 +78,7 @@ import kotlin.math.absoluteValue
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    navController: NavHostController?,
+    navController: NavHostController,
     viewModel: MainViewModel = hiltViewModel(),
     onComposing: (MyTopAppBarState) -> Unit
 ) {
@@ -133,7 +134,7 @@ fun MainScreen(
     MainScreenUi(
         modifier = Modifier.fillMaxSize(),
         state = state,
-        navController = navController!!,
+        navController = navController,
         onActions = viewModel::onAction
     )
 
@@ -459,7 +460,7 @@ fun BankCardView(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun MainScreenPreview() {
-    MainScreen(null) {}
+    MainScreen(rememberNavController()) {}
 }
 
 
