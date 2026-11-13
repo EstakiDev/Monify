@@ -1,193 +1,60 @@
 package dev.estaki.domain.processor
 
-import android.util.Log
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.SmsRawModel
 import dev.estaki.domain.models.TransactionType
-import dev.estaki.kt_pure_utils.isProbablyArabicOrPersian
-import dev.estaki.kt_pure_utils.removeFarsiChar
-import dev.estaki.kt_pure_utils.removeSpecialChar
-import kotlin.math.log
-import kotlin.text.split
+import dev.estaki.domain.validator.SmsValidator
+import java.nio.ByteBuffer
+import java.security.MessageDigest
 
+/** Converts transaction notification SMS messages into the app's transaction model. */
+class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
+    fun execute(): List<SmsModel> = smsRawModelList.mapNotNull(::parse)
 
-class SmsProcessor(private var smsRawModelList: MutableList<SmsRawModel>) {
-
-    private lateinit var transactionType: TransactionType
-
-    fun execute(): List<SmsModel>? {
-        return assertAndQualify()
-    }
-
-    private fun assertAndQualify(): List<SmsModel>? {
-        assertOfSender()
-        assertOfDescription()
-        return parsSms()
-    }
-
-    private fun assertOfSender() {
-        try {
-            smsRawModelList.removeAll { sms ->
-                sms.senderName.startsWith("+989") ||
-                        sms.senderName.startsWith("98") ||
-                        sms.senderName.startsWith("+98") ||
-                        sms.senderName.contains("HAMRAHAVAL", true) ||
-                        sms.senderName.contains("IRANCELL", true) ||
-                        sms.senderName.contains("RIGHTEL", true) ||
-                        sms.senderName.contains("DIGIPAY", true)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
+    private fun parse(raw: SmsRawModel): SmsModel? {
+        if (!SmsValidator.isBankSms(raw)) return null
+        val body = SmsValidator.normalize(raw.description)
+        val amountMatch = amountRegex.findAll(body).lastOrNull() ?: return null
+        val amount = amountMatch.value.replace(Regex("[,،٬]"), "")
+        val type = if (withdrawalWords.any(body::contains) || amountMatch.range.first > 0 && body[amountMatch.range.first - 1] == '-') {
+            TransactionType.WITHDRAW
+        } else {
+            TransactionType.DEPOSIT
         }
+        val balance = balanceRegex.find(body)?.groupValues?.getOrNull(1)?.replace(Regex("[,،٬]"), "") ?: "-"
+        val account = accountRegex.find(body)?.groupValues?.getOrNull(1)?.ifBlank { "-" } ?: "-"
+        val time = timeRegex.find(body)?.value ?: "-"
+        val bankName = raw.senderName.takeIf { it.any(Char::isLetter) } ?: body.lineSequence().firstOrNull().orEmpty()
+        val epoch = raw.receiveDateTime.toLongOrNull() ?: 0L
+
+        return SmsModel(
+            id = stableId(raw),
+            bankName = bankName,
+            bankAccountNumber = account,
+            transactionType = type,
+            transactionAmount = amount,
+            transactionDate = raw.receiveDate.ifBlank { "-" },
+            transactionDateTime = epoch,
+            transactionTime = time,
+            bankCardBalance = balance,
+            categoryIds = emptyList(),
+            description = null,
+            smsSender = raw.senderName,
+            smsBody = raw.description
+        )
     }
 
-    private fun assertOfDescription() {
-        try {
-            val smsList = smsRawModelList.filter { sms ->
-                (
-                        sms.description.contains("واریز") ||
-                                sms.description.contains("واريز") ||
-                                sms.description.contains("واریز به") ||
-                                sms.description.contains("واریز حقوق") ||
-                                sms.description.contains("برداشت") ||
-                                sms.description.contains("برداشت از") ||
-                                sms.description.contains("+") ||
-                                sms.description.contains("-") ||
-                                sms.description.contains("حساب")
-                        )
-                        &&
-                        (sms.description.contains("مانده") || sms.description.contains("موجودی") || sms.description.contains(
-                            "موجودي"
-                        ))
-            }
-            val finalResult = smsList.toMutableList()
-            finalResult.removeAll { s ->
-                (s.description.contains("مشتری") ||
-                        s.description.contains("مشتر") ||
-                        s.description.contains("مشترک") ||
-                        s.description.contains("گرامی") ||
-                        s.description.contains("محترم") ||
-                        s.description.contains("جناب") ||
-                        s.description.contains("آقای") ||
-                        s.description.contains("خانم") ||
-                        s.description.contains("قرعه") ||
-                        s.description.contains("طلایی")
-                        )
-            }
-            smsRawModelList = finalResult
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+    private fun stableId(raw: SmsRawModel): Long {
+        val identity = "${raw.senderName}\u0000${raw.receiveDateTime}\u0000${raw.description}"
+        val digest = MessageDigest.getInstance("SHA-256").digest(identity.toByteArray(Charsets.UTF_8))
+        return ByteBuffer.wrap(digest, 0, Long.SIZE_BYTES).long and Long.MAX_VALUE
     }
 
-    private fun parsSms(): List<SmsModel>? {
-        val listOfModel = mutableListOf<SmsModel>()
-        try {
-            smsRawModelList.forEach { sms ->
-                val dateRegex =
-                    Regex("\\d{2,4}+\\/\\d{1,2}\\/\\d{2,4}|([0-1]?[0-9]|2[0-3])\\/[0-5][0-9]")
-                val dateRegexMatch = dateRegex.find(sms.description)
-                val date = dateRegexMatch?.groups?.first()?.value
-
-                val timeRegex = Regex("([0-9]{1,2}+)(:[0-9]{2}+)(:[0-9]{2})*")
-                val timeRegexMatch = timeRegex.find(sms.description)
-                val time = timeRegexMatch?.groups?.first()?.value
-
-                val split = sms.description.split("\n")
-                var finalBankAccountNumber: String =
-                    parsBankAccountNumber(sms.senderName, sms.description)
-
-                var amount = parsTransactionAmount(sms.description)
-
-                var transactionType: TransactionType = if (amount.contains("برداشت") || amount.contains("-")) TransactionType.WITHDRAW else TransactionType.DEPOSIT
-
-                listOfModel.add(
-                    SmsModel(
-                        id = sms._id.toLong(),
-                        bankName = if (split.first()
-                                .isProbablyArabicOrPersian()
-                        ) split.first().removeSpecialChar() else sms.senderName,
-                        bankAccountNumber = finalBankAccountNumber.trim().removeFarsiChar(),
-                        transactionType = transactionType,
-                        transactionAmount = amount.removeFarsiChar().trim(),
-                        transactionDate = sms.receiveDate,
-                        transactionTime = time ?: "-",
-                        bankCardBalance = (split.find {
-                            (it.contains("موجودی") ||
-                                    it.contains("مانده") ||
-                                    it.contains("موجودي"))
-                        } ?: "-").removeFarsiChar(),
-                        categoryIds = emptyList(),
-                        description = "",
-                        transactionDateTime = sms.receiveDateTime.toLong(),
-                        smsSender = sms.senderName,
-                        smsBody = sms.description,
-                    )
-                )
-            }
-
-            return listOfModel.sortedByDescending { it.transactionDate }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return null
-        }
-    }
-
-    private fun parsTransactionAmount(smsDescription: String): String {
-        var amount = ""
-        Regex("""(?:مبلغ:|برداشت:|واریز:|واریز حقوق:)\s?(\d{1,3}(?:,\d{3})+)|(\d{1,3}(?:,\d{3})+)(?:\+|-)""")
-            .findAll(smsDescription).forEach {
-                amount = it.groups.first()?.value.toString()
-                transactionType = if (it.groups.any { case ->
-                        case?.value?.contains("برداشت") == true || case?.value?.contains("-") == true
-                    }) TransactionType.WITHDRAW else TransactionType.DEPOSIT
-            }
-
-        if (amount.isBlank()){
-            Regex("""[-+]+\d{1,3}(?:,\d{3})+""")
-                .findAll(smsDescription).forEach {
-                    amount = it.groups.first()?.value.toString()
-                    transactionType = if (it.groups.any { case ->
-                            case?.value?.contains("برداشت") == true || case?.value?.contains("-") == true
-                        }) TransactionType.WITHDRAW else TransactionType.DEPOSIT
-                }
-        }
-        return amount
-    }
-
-    private fun parsBankAccountNumber(smsSender: String, smsDescription: String): String {
-        val smsSplitByNextLine = smsDescription.split("\n")
-        smsSplitByNextLine.find {
-            it.contains("برداشت از:") || it.contains("حساب:") || it.contains("واريز به") || it.contains(
-                "حساب"
-            )
-        }?.let {
-            if (it.isNotBlank()) {
-                val t = it.split(":", " ")
-                t.let { list ->
-                    return list.find { item ->
-                        item.any { char ->
-                            char.isDigit()
-                        }
-                    }?.toString() ?: run {
-                        return "حساب ناشناخته!"
-                    }
-
-                }
-
-            } else
-                return "حساب ناشناخته!"
-        } ?: run {
-            return ((if (smsSender == "B.QMEHRIRAN")
-                smsSplitByNextLine.first()
-            else if (smsSplitByNextLine.first().any { it.isDigit() }) {
-                smsSplitByNextLine.first()
-            } else {
-                "حساب ناشناخته!"
-            }).toString()
-                    )
-        }
-        return "حساب ناشناخته!"
-
+    private companion object {
+        val withdrawalWords = listOf("برداشت", "خرید", "پرداخت", "انتقال از")
+        val amountRegex = Regex("(?<!\\d)\\d{1,3}(?:[,،٬]\\d{3})+(?!\\d)|(?<!\\d)\\d{4,}(?!\\d)")
+        val balanceRegex = Regex("(?:مانده|موجودی)(?:\\s*(?:حساب|:))?\\s*[:：]?\\s*([\\d,،٬]+)")
+        val accountRegex = Regex("(?:کارت|حساب|شماره کارت|شماره حساب)\\s*[:：]?\\s*([\\d*۰-۹٠-٩-]{4,})")
+        val timeRegex = Regex("(?<!\\d)(?:[01]?\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?(?!\\d)")
     }
 }
