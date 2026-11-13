@@ -93,8 +93,7 @@ fun SplashScreenUi(
 ) {
     val permissions = arrayOf(
         Manifest.permission.READ_SMS,
-        Manifest.permission.RECEIVE_SMS,
-        Manifest.permission.POST_NOTIFICATIONS
+        Manifest.permission.RECEIVE_SMS
     )
     val modalBottomSheetState = rememberModalBottomSheetState()
     val context = LocalContext.current
@@ -128,7 +127,7 @@ fun SplashScreenUi(
             if (it.all { map -> map.value == true }) {
                 onAction.invoke(SplashScreenActions.ExtractSmsFromContentResolver(context.contentResolver))
             } else {
-                checkShouldShowRequestPermissionRationale(activity!!, permissions) {
+                checkShouldShowRequestPermissionRationale(activity, permissions) {
                     if (it || numberOfAttempts >= 2) {
                         showManyFailedAttemptPermissions = true
                     } else {
@@ -153,7 +152,7 @@ fun SplashScreenUi(
             modifier = Modifier,
             modalBottomSheetState,
             onBtnGetPermissionClicked = {
-                checkShouldShowRequestPermissionRationale(activity!!, permissions) {
+                checkShouldShowRequestPermissionRationale(activity, permissions) {
                     if (it) {
                         mustGetPermissions = false
                         showManyFailedAttemptPermissions = true
@@ -161,8 +160,7 @@ fun SplashScreenUi(
                         requestPermissionLauncher.launch(
                             arrayOf(
                                 Manifest.permission.READ_SMS,
-                                Manifest.permission.RECEIVE_SMS,
-                                Manifest.permission.POST_NOTIFICATIONS
+                                Manifest.permission.RECEIVE_SMS
                             )
                         )
                     }
@@ -324,10 +322,14 @@ fun SplashScreenPreview() {
 }
 
 private fun checkShouldShowRequestPermissionRationale(
-    activity: Activity,
+    activity: Activity?,
     listOfPermissions: Array<String>,
     onResult: (shouldShowRequestPermissionRationale: Boolean) -> Unit
 ) {
+    if (activity == null) {
+        onResult(false)
+        return
+    }
     var shouldShowRequestPermissionRationale = false
     listOfPermissions.forEach {
         shouldShowRequestPermissionRationale =
