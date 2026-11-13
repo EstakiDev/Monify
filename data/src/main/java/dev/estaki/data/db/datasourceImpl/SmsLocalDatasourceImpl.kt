@@ -23,17 +23,14 @@ class SmsLocalDatasourceImpl(
             smsDao.read(id).toDomainModel()
         ) }.flowOn(Dispatchers.IO)
 
-    override suspend fun deleteById(id: Long): Flow<Int> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteById(id: Long): Flow<Int> =
+        flow { emit(smsDao.deleteById(id)) }.flowOn(Dispatchers.IO)
 
     override suspend fun delete(entity: SmsModel): Flow<Int> = flow { emit(
         smsDao.delete(entity.toDbEntity())
     ) }.flowOn(Dispatchers.IO)
 
-    override suspend fun deleteAll(): Flow<Int> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteAll(): Flow<Int> = flow { emit(smsDao.deleteAll()) }.flowOn(Dispatchers.IO)
 
     override suspend fun upsert(entity: SmsModel) {
         withContext(Dispatchers.IO) {
@@ -42,17 +39,13 @@ class SmsLocalDatasourceImpl(
         }
     }
 
-    override suspend fun add(entity: SmsModel) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun add(entity: SmsModel) = upsert(entity)
 
     override suspend fun addAll(item: List<SmsModel>): Flow<List<Long>> =
         flow { emit(smsDao.insertAll(item.map { it.toDbEntity() })) }.flowOn(Dispatchers.IO)
 
 
-    override suspend fun getAllCount(): Flow<Long> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getAllCount(): Flow<Long> = flow { emit(smsDao.getCount()) }.flowOn(Dispatchers.IO)
 
     override suspend fun getSmsByBankAccountNumber(accountNumber: String): Flow<List<SmsModel>> =
         flow { emit(smsDao.readByBankAccountNumber(accountNumber).map { it.toDomainModel() }) }.flowOn(Dispatchers.IO)

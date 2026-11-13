@@ -10,6 +10,4 @@ interface BankAccountDataSource {
         suspend fun getAllBankAccountNumber():Flow<List<BankCardModel>>
     }
 
-    interface Remote:BaseDataSource<BankCardModel,Int,Long> {
-    }
 }

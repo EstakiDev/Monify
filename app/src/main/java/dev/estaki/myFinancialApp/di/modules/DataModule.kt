@@ -8,11 +8,8 @@ import dev.estaki.data.db.dao.BankAccountDao
 import dev.estaki.data.db.dao.CategoryDao
 import dev.estaki.data.db.dao.SmsDao
 import dev.estaki.data.db.datasourceImpl.BankAccountLocalDataSourceImpl
-import dev.estaki.data.db.datasourceImpl.BankAccountRemoteDataSourceImpl
 import dev.estaki.data.db.datasourceImpl.CategoryLocalDataSourceImpl
-import dev.estaki.data.db.datasourceImpl.CategoryRemoteDataSourceImpl
 import dev.estaki.data.db.datasourceImpl.SmsLocalDatasourceImpl
-import dev.estaki.data.db.datasourceImpl.SmsRemoteDatasourceImpl
 import dev.estaki.data.db.repositoryImpl.BankAccountRepositoryImpl
 import dev.estaki.data.db.repositoryImpl.CategoryRepositoryImpl
 import dev.estaki.data.db.repositoryImpl.SmsRepositoryImpl
@@ -31,18 +28,11 @@ class DataModule {
     @Provides
     @Singleton
     fun provideSmsRepository(
-        smsLocalDs: SmsDataSource.Local,
-        smsRemoteDs: SmsDataSource.Remote
+        smsLocalDs: SmsDataSource.Local
     ): SmsRepository {
-        return SmsRepositoryImpl(smsLocalDs, smsRemoteDs)
+        return SmsRepositoryImpl(smsLocalDs)
     }
 
-
-    @Provides
-    @Singleton
-    fun provideSmsRemoveDataSource(): SmsDataSource.Remote {
-        return SmsRemoteDatasourceImpl()
-    }
 
     @Provides
     @Singleton
@@ -53,16 +43,9 @@ class DataModule {
     @Provides
     @Singleton
     fun provideCategoryRepository(
-        categoryLocalDs: CategoryDataSource.Local,
-        categoryRemoteDs: CategoryDataSource.Remote
+        categoryLocalDs: CategoryDataSource.Local
     ): CategoryRepository {
-        return CategoryRepositoryImpl(categoryLocalDs, categoryRemoteDs)
-    }
-
-    @Provides
-    @Singleton
-    fun provideCategoryRemoveDataSource(): CategoryDataSource.Remote {
-        return CategoryRemoteDataSourceImpl()
+        return CategoryRepositoryImpl(categoryLocalDs)
     }
 
     @Provides
@@ -74,18 +57,11 @@ class DataModule {
     @Provides
     @Singleton
     fun provideBankAccountRepository(
-        bankAccountLocalDs: BankAccountDataSource.Local,
-        bankAccountRemoteDs: BankAccountDataSource.Remote
+        bankAccountLocalDs: BankAccountDataSource.Local
     ): BankAccountRepository {
-        return BankAccountRepositoryImpl(bankAccountLocalDs, bankAccountRemoteDs)
+        return BankAccountRepositoryImpl(bankAccountLocalDs)
     }
 
-
-    @Provides
-    @Singleton
-    fun provideBankAccountRemoveDataSource(): BankAccountDataSource.Remote {
-        return BankAccountRemoteDataSourceImpl()
-    }
 
     @Provides
     @Singleton

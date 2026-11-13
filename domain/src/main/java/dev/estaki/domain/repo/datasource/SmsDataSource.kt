@@ -13,6 +13,4 @@ interface SmsDataSource {
         suspend fun setIsRemoved(smsId: Long): Flow<Int>
     }
 
-    interface Remote:BaseDataSource<SmsModel,Int,Long> {
-    }
 }

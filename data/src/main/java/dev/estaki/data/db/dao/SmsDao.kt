@@ -23,6 +23,15 @@ interface SmsDao {
     @Query("SELECT * FROM tb_sms WHERE id=:id")
     fun read(id: Long): SmsEntity
 
+    @Query("DELETE FROM tb_sms WHERE id = :id")
+    fun deleteById(id: Long): Int
+
+    @Query("DELETE FROM tb_sms")
+    fun deleteAll(): Int
+
+    @Query("SELECT COUNT(*) FROM tb_sms")
+    fun getCount(): Long
+
     @Query("SELECT * FROM tb_sms WHERE bankAccountNumber=:bankAccountNumber AND isRemoved = 0 ORDER BY transactionDateTime DESC")
     fun readByBankAccountNumber(bankAccountNumber: String): List<SmsEntity>
 

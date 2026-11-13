@@ -37,7 +37,7 @@ class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao)
         }
 
     override suspend fun add(entity: BankCardModel) {
-        TODO("Not yet implemented")
+        upsert(entity)
     }
 
     override suspend fun addAll(item: List<BankCardModel>): Flow<List<Long>> =
@@ -61,9 +61,7 @@ class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao)
             )
         }.flowOn(Dispatchers.IO)
 
-    override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> = readAll()
 
 
 }
