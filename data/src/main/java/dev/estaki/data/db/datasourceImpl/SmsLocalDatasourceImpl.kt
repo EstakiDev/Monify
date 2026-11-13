@@ -51,7 +51,18 @@ class SmsLocalDatasourceImpl(
         flow { emit(smsDao.readByBankAccountNumber(accountNumber).map { it.toDomainModel() }) }.flowOn(Dispatchers.IO)
 
     override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> =
-        flow { emit(smsDao.readAllBankAccountNumber().map { it.toDomainModel() }) }.flowOn(Dispatchers.IO)
+        flow {
+            emit(smsDao.readAllBankAccountNumber().map { account ->
+                BankCardModel(
+                    id = account.bankAccountNumber.hashCode(),
+                    bankName = account.bankName,
+                    bankAccountNumber = account.bankAccountNumber,
+                    bankCardBalance = account.bankCardBalance,
+                    bankCardNumber = null,
+                    isItFromSms = true
+                )
+            })
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun setSmsWasSaw(smsId: Long) {
         withContext(Dispatchers.IO) {

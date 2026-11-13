@@ -6,7 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
-import dev.estaki.data.entities.BankAccountEntity
+import dev.estaki.data.entities.SmsBankAccountProjection
 import dev.estaki.data.entities.SmsEntity
 import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.models.SmsModel
@@ -35,16 +35,19 @@ interface SmsDao {
     @Query("SELECT * FROM tb_sms WHERE bankAccountNumber=:bankAccountNumber AND isRemoved = 0 ORDER BY transactionDateTime DESC")
     fun readByBankAccountNumber(bankAccountNumber: String): List<SmsEntity>
 
-    @Query(
-        "SELECT id,\n" +
-                "       bankAccountNumber,\n" +
-                "       bankName,\n" +
-                "       bankCardBalance,\n" +
-                "       max(transactionDateTime)\n" +
-                "  FROM tb_sms\n" +
-                " GROUP BY bankAccountNumber;"
-    )
-    fun readAllBankAccountNumber(): List<BankAccountEntity>
+    @Query("""
+        SELECT account.bankAccountNumber, account.bankName, account.bankCardBalance
+        FROM tb_sms AS account
+        WHERE account.id = (
+            SELECT candidate.id
+            FROM tb_sms AS candidate
+            WHERE candidate.bankAccountNumber = account.bankAccountNumber
+            ORDER BY candidate.transactionDateTime DESC, candidate.id DESC
+            LIMIT 1
+        )
+        ORDER BY account.transactionDateTime DESC
+    """)
+    fun readAllBankAccountNumber(): List<SmsBankAccountProjection>
 
     @Query("UPDATE tb_sms SET isSeen = 1 WHERE id=:smsId")
     fun setSmsWasSaw(smsId: Long)
