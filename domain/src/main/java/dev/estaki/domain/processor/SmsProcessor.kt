@@ -14,7 +14,15 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
     private fun parse(raw: SmsRawModel): SmsModel? {
         if (!SmsValidator.isBankSms(raw)) return null
         val body = SmsValidator.normalize(raw.description)
-        val amountMatch = amountRegex.findAll(body).lastOrNull() ?: return null
+        val labeledAmount = labeledAmountRegex.find(body)?.groupValues?.get(1)
+            ?: directionalAmountRegex.find(body)?.groupValues?.get(1)
+        val amountMatch = labeledAmount?.let { amountRegex.find(it) }
+            ?: amountRegex.findAll(body).firstOrNull { match ->
+                val contextBefore = body.substring(maxOf(0, match.range.first - 14), match.range.first)
+                !contextBefore.contains("مانده") && !contextBefore.contains("موجودی") &&
+                    !contextBefore.contains("کارت") && !contextBefore.contains("حساب")
+            }
+            ?: return null
         val amount = amountMatch.value.replace(Regex("[,،٬]"), "")
         val type = if (withdrawalWords.any(body::contains) || amountMatch.range.first > 0 && body[amountMatch.range.first - 1] == '-') {
             TransactionType.WITHDRAW
@@ -53,6 +61,8 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
     private companion object {
         val withdrawalWords = listOf("برداشت", "خرید", "پرداخت", "انتقال از")
         val amountRegex = Regex("(?<!\\d)\\d{1,3}(?:[,،٬]\\d{3})+(?!\\d)|(?<!\\d)\\d{4,}(?!\\d)")
+        val labeledAmountRegex = Regex("مبلغ(?:\\s*تراکنش)?\\s*[:：]?\\s*([\\d,،٬]+)")
+        val directionalAmountRegex = Regex("(?:واریز|برداشت|خرید|پرداخت)\\s*[:：]\\s*([\\d,،٬]+)")
         val balanceRegex = Regex("(?:مانده|موجودی)(?:\\s*(?:حساب|:))?\\s*[:：]?\\s*([\\d,،٬]+)")
         val accountRegex = Regex("(?:کارت|حساب|شماره کارت|شماره حساب)\\s*[:：]?\\s*([\\d*۰-۹٠-٩-]{4,})")
         val timeRegex = Regex("(?<!\\d)(?:[01]?\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?(?!\\d)")
