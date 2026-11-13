@@ -23,11 +23,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyFinancialApp"
         tools:targetApi="31">
-        <activity android:name="dev.estaki.myFinancialApp.presentation.splash.SplashActivity"
-            android:exported="true"
-            android:theme="@style/Theme.MyFinancialApp">
-
-        </activity>
         <activity
             android:name="dev.estaki.myFinancialApp.presentation.main.MainActivity"
             android:exported="true"
