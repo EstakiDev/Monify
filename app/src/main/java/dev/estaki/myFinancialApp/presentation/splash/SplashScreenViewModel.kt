@@ -176,9 +176,11 @@ class SplashScreenViewModel @Inject constructor(
     private suspend fun cacheSmsToDb(smsList: MutableList<SmsModel>) {
         Timber.tag("TAG").d("parseSmsToModel --;;;")
         val smsListInDb = getSavedSmsInDb()
-        smsList.removeAll(smsListInDb)
+        val knownMessages = smsListInDb
+            .mapTo(HashSet<Triple<String, String, Long>>()) { it.fingerprint() }
+        val newMessages = smsList.filter { knownMessages.add(it.fingerprint()) }
 
-        cashSmsToDb.invoke(smsList).catch {
+        cashSmsToDb.invoke(newMessages).catch {
             it.printStackTrace()
             SnackBarController.sendEvent(
                 SnackBarEvent(
@@ -190,6 +192,9 @@ class SplashScreenViewModel @Inject constructor(
             Timber.tag("TAG").d("parseSmsToModel: cashSmsToDb done $it")
         }
     }
+
+    private fun SmsModel.fingerprint(): Triple<String, String, Long> =
+        Triple(smsSender, smsBody, transactionDateTime)
 
     fun correctDate(smsL: ArrayList<SmsRawModel>) {
         smsL.forEach {
