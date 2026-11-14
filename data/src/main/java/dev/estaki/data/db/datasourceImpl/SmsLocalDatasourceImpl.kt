@@ -5,6 +5,8 @@ import dev.estaki.data.mapper.toDbEntity
 import dev.estaki.data.mapper.toDomainModel
 import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.models.SmsModel
+import dev.estaki.domain.models.SmsRawModel
+import dev.estaki.domain.validator.SmsValidator
 import dev.estaki.domain.repo.datasource.SmsDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -48,7 +50,15 @@ class SmsLocalDatasourceImpl(
     override suspend fun getAllCount(): Flow<Long> = flow { emit(smsDao.getCount()) }.flowOn(Dispatchers.IO)
 
     override suspend fun getSmsByBankAccountNumber(accountNumber: String): Flow<List<SmsModel>> =
-        flow { emit(smsDao.readByBankAccountNumber(accountNumber).map { it.toDomainModel() }) }.flowOn(Dispatchers.IO)
+        flow {
+            emit(smsDao.readByBankAccountNumber(accountNumber)
+                .map { it.toDomainModel() }
+                .filter { it.isModified || it.isTransactionAlert() })
+        }.flowOn(Dispatchers.IO)
+
+    private fun SmsModel.isTransactionAlert(): Boolean = SmsValidator.isBankSms(
+        SmsRawModel(id?.toString().orEmpty(), smsSender, smsBody, transactionDate, transactionDateTime.toString())
+    )
 
     override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> =
         flow {
