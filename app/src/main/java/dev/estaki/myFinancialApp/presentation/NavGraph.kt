@@ -1,7 +1,13 @@
 package dev.estaki.myFinancialApp.presentation
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarDuration
@@ -19,7 +25,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,10 +35,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.runtime.collectAsState
 import androidx.navigation.navArgument
 import dev.estaki.domain.error.MyCustomSnackBarType
+import dev.estaki.monify.R
 import dev.estaki.myFinancialApp.presentation.addAndEditBankCard.AddOrEditCreditCardScreen
 import dev.estaki.myFinancialApp.presentation.detailScreen.TransactionDetail
 import dev.estaki.myFinancialApp.presentation.main.MainScreen
@@ -50,6 +60,8 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val splashViewModel: SplashScreenViewModel = hiltViewModel()
     val splashState by splashViewModel.splashScreenState.collectAsState()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val isMainScreen = currentBackStackEntry?.destination?.route == "MainScreen"
 
     var topAppbarState by remember {
         mutableStateOf(
@@ -96,13 +108,17 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        text = topAppbarState.title,
-                        fontFamily = ariaFaNumFontFamily,
-                        fontWeight = FontWeight.Black,
-                        fontSize = 15.sp,
-                        modifier = Modifier.padding(12.dp)
-                    )
+                    if (isMainScreen) {
+                        MonifyTopBarTitle()
+                    } else {
+                        Text(
+                            text = topAppbarState.title,
+                            fontFamily = ariaFaNumFontFamily,
+                            fontWeight = FontWeight.Black,
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 },
                 navigationIcon = topAppbarState.navigationIcon,
                 actions = topAppbarState.actions,
@@ -166,6 +182,33 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
                 }
             }
 
+        }
+    }
+}
+
+@Composable
+private fun MonifyTopBarTitle() {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Image(
+            painter = painterResource(R.drawable.monify_mark),
+            contentDescription = null,
+            modifier = Modifier.size(48.dp)
+        )
+        Column {
+            Text(
+                text = "مانیفای",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = "همراه دخل و خرج تو",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
