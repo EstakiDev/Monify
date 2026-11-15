@@ -27,20 +27,33 @@ val iranSansFaNumFontFamily = FontFamily(
     Font(R.font.iran_sans_mobile_fa_num_bold, FontWeight.Bold),
     Font(R.font.iran_sans_mobile_fa_num_black, FontWeight.Black),
 )
-val ariaFaNumFontFamily = FontFamily(
-    Font(R.font.aria_thin, FontWeight.Thin),
-    Font(R.font.aria_extra_light, FontWeight.ExtraLight),
-    Font(R.font.aria_light, FontWeight.Light),
-    Font(R.font.aria_normal, FontWeight.Normal),
-    Font(R.font.aria_medium, FontWeight.Medium),
-    Font(R.font.aria_bold, FontWeight.Bold),
-    Font(R.font.aria_extra_bold, FontWeight.ExtraBold),
-    Font(R.font.aria_black, FontWeight.Black),
-    Font(R.font.aria_heavy, FontWeight.ExtraBold),
+val vazirmatnFontFamily = FontFamily(
+    Font(R.font.vazirmatn_regular, FontWeight.Normal),
+    Font(R.font.vazirmatn_medium, FontWeight.Medium),
+    Font(R.font.vazirmatn_semibold, FontWeight.SemiBold),
+    Font(R.font.vazirmatn_bold, FontWeight.Bold),
+    Font(R.font.vazirmatn_black, FontWeight.Black),
 )
 
-val coolakFaNumFontFamily = FontFamily(
-    Font(R.font.colak_fa_num, FontWeight.Normal),
+val ariaFaNumFontFamily = vazirmatnFontFamily
+val coolakFaNumFontFamily = vazirmatnFontFamily
+
+private fun Typography.withVazirmatn() = copy(
+    displayLarge = displayLarge.copy(fontFamily = vazirmatnFontFamily),
+    displayMedium = displayMedium.copy(fontFamily = vazirmatnFontFamily),
+    displaySmall = displaySmall.copy(fontFamily = vazirmatnFontFamily),
+    headlineLarge = headlineLarge.copy(fontFamily = vazirmatnFontFamily),
+    headlineMedium = headlineMedium.copy(fontFamily = vazirmatnFontFamily),
+    headlineSmall = headlineSmall.copy(fontFamily = vazirmatnFontFamily),
+    titleLarge = titleLarge.copy(fontFamily = vazirmatnFontFamily),
+    titleMedium = titleMedium.copy(fontFamily = vazirmatnFontFamily),
+    titleSmall = titleSmall.copy(fontFamily = vazirmatnFontFamily),
+    labelLarge = labelLarge.copy(fontFamily = vazirmatnFontFamily),
+    labelMedium = labelMedium.copy(fontFamily = vazirmatnFontFamily),
+    labelSmall = labelSmall.copy(fontFamily = vazirmatnFontFamily),
+    bodyLarge = bodyLarge.copy(fontFamily = vazirmatnFontFamily),
+    bodyMedium = bodyMedium.copy(fontFamily = vazirmatnFontFamily),
+    bodySmall = bodySmall.copy(fontFamily = vazirmatnFontFamily)
 )
 
 val TypographyDark = Typography(
@@ -49,54 +62,54 @@ val TypographyDark = Typography(
         fontFamily = ariaFaNumFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
-        lineHeight = 8.sp,
-        letterSpacing = 1.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp,
         color = ColorTextGrayOnDarkTheme,
     ),
     bodyMedium = TextStyle(
         fontFamily = ariaFaNumFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 17.sp,
-        lineHeight = 8.sp,
-        letterSpacing = 1.sp,
+        lineHeight = 26.sp,
+        letterSpacing = 0.sp,
         color = ColorTextGrayOnDarkTheme,
     ),
     bodyLarge = TextStyle(
         fontFamily = ariaFaNumFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
-        lineHeight = 8.sp,
-        letterSpacing = 1.sp,
+        lineHeight = 34.sp,
+        letterSpacing = 0.sp,
         color = ColorTextGrayOnDarkTheme,
     ),
-)
+).withVazirmatn()
 
 val TypographyLite = Typography(
     bodySmall =  TextStyle(
         fontFamily = ariaFaNumFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
-        lineHeight = 8.sp,
-        letterSpacing = 1.sp,
+        lineHeight = 22.sp,
+        letterSpacing = 0.sp,
         color = ColorTextGrayOnLiteTheme,
     ),
     bodyMedium = TextStyle(
         fontFamily = ariaFaNumFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 17.sp,
-        lineHeight = 8.sp,
-        letterSpacing = 1.sp,
+        lineHeight = 26.sp,
+        letterSpacing = 0.sp,
         color = ColorTextGrayOnLiteTheme,
     ),
     bodyLarge = TextStyle(
         fontFamily = ariaFaNumFontFamily,
         fontWeight = FontWeight.Bold,
         fontSize = 24.sp,
-        lineHeight = 8.sp,
-        letterSpacing = 1.sp,
+        lineHeight = 34.sp,
+        letterSpacing = 0.sp,
         color = ColorTextGrayOnLiteTheme,
     ),
-)
+).withVazirmatn()
 
 /* Other default text styles to override
 titleLarge = TextStyle(

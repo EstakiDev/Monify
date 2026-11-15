@@ -59,11 +59,11 @@ fun MyTimePicker(
                     TextButton(onClick = onDismiss) {
                         Text(
                             text = "انصراف",
-                            fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.aria_bold))
+                            fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.vazirmatn_bold))
                         )
                     }
                     TextButton(onClick = { onConfirm.invoke(timePickerState) }) {
-                        Text(text = "تایید", fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.aria_bold)))
+                        Text(text = "تایید", fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.vazirmatn_bold)))
                     }
                 }
 
