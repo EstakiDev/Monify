@@ -12,7 +12,6 @@ import dev.estaki.domain.models.SmsRawModel
 import dev.estaki.domain.processor.SmsProcessor
 import dev.estaki.domain.usecases.CacheAllBankAccountToDb
 import dev.estaki.domain.usecases.CacheSmsToDb
-import dev.estaki.domain.usecases.CountAllBankAccountInDb
 import dev.estaki.domain.usecases.GetAllBankAccountNumberFromTbSms
 import dev.estaki.domain.usecases.GetAllSms
 import dev.estaki.myFinancialApp.convertToTime
@@ -22,6 +21,7 @@ import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -36,20 +36,26 @@ class SplashScreenViewModel @Inject constructor(
     private val cashSmsToDb: CacheSmsToDb,
     private val getAllBankAccountNumberFromTbSms: GetAllBankAccountNumberFromTbSms,
     private val cacheAllBankAccountToDb: CacheAllBankAccountToDb,
-    private val countAllBankAccountInDb: CountAllBankAccountInDb,
     private val getAllSms: GetAllSms
 ) : ViewModel() {
     private val _splashScreenState = MutableStateFlow(SplashScreenState())
     val splashScreenState = _splashScreenState.asStateFlow()
+    private var syncJob: Job? = null
 
     fun onAction(action: SplashScreenActions) {
         when (action) {
 
             is SplashScreenActions.ExtractSmsFromContentResolver -> {
-                viewModelScope.launch {
-                    if (_splashScreenState.value.mustGetPermissions)
-                        _splashScreenState.update { it.copy(mustGetPermissions = false) }
-                    readSms(action.contentResolver)
+                if (syncJob?.isActive == true) return
+                _splashScreenState.update {
+                    it.copy(mustGetPermissions = false, isLoading = false, isSyncing = true, isFinishedAndGoToMainScreen = true)
+                }
+                syncJob = viewModelScope.launch {
+                    try {
+                        readSms(action.contentResolver)
+                    } finally {
+                        _splashScreenState.update { it.copy(isSyncing = false) }
+                    }
                 }
             }
 
@@ -101,12 +107,10 @@ class SplashScreenViewModel @Inject constructor(
                 cacheSmsToDb(transactions)
                 cacheBankAccountToDb()
             }
-            onAction(SplashScreenActions.MustGoToMainScreen)
         } catch (exception: CancellationException) {
             throw exception
         } catch (exception: Exception) {
             Timber.e(exception, "Unable to synchronize bank SMS messages")
-            onAction(SplashScreenActions.MustGoToMainScreen)
         }
     }
 
@@ -119,9 +123,8 @@ class SplashScreenViewModel @Inject constructor(
                     type = MyCustomSnackBarType.ERROR
                 )
             )
-        }.collect { listOfNewBankAccount ->
-
-            countAllBankAccountInDb.invoke().catch {
+        }.collect { accounts ->
+            cacheAllBankAccountToDb.invoke(accounts).catch {
                 it.printStackTrace()
                 SnackBarController.sendEvent(
                     SnackBarEvent(
@@ -129,40 +132,9 @@ class SplashScreenViewModel @Inject constructor(
                         type = MyCustomSnackBarType.ERROR
                     )
                 )
-            }.collect { list ->
-                val mutableListOfOldBankAccount = list.toMutableList()
-                val mutableListOfNewBankAccount = listOfNewBankAccount.toMutableList()
-
-                val newList = mutableListOfNewBankAccount.map { new ->
-                    val existing = mutableListOfOldBankAccount.find { item ->
-                        item.bankAccountNumber == new.bankAccountNumber
-                    }
-                    if (existing != null && (existing.isItFromSms != true ||
-                            (!existing.bankCardNumber.isNullOrBlank() && existing.bankCardNumber != "null"))) {
-                        existing
-                    } else {
-                        new.copy(bankCardNumber = existing?.bankCardNumber, isItFromSms = true)
-                    }
-                }
-
-                Timber.tag("TAG").d("getAllBankAccountNumberFromTbSms: done ")
-                cacheAllBankAccountToDb.invoke(
-                    newList
-                ).catch {
-                    it.printStackTrace()
-                    SnackBarController.sendEvent(
-                        SnackBarEvent(
-                            "متاسفانه عملیات مورد نظر با خطا مواجه شد!",
-                            type = MyCustomSnackBarType.ERROR
-                        )
-                    )
-                }.collect {
-                    Timber.tag("TAG").d("cacheBankAccountToDb: done")
-                }
-
+            }.collect {
+                Timber.tag("TAG").d("cacheBankAccountToDb: done")
             }
-
-
         }
     }
 

@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import dev.estaki.data.entities.BankAccountEntity
 import dev.estaki.domain.models.BankCardModel
@@ -17,6 +18,21 @@ interface BankAccountDao {
 
     @Insert(onConflict = OnConflictStrategy.Companion.REPLACE)
     fun insertAll(smsList :List<BankAccountEntity>):List<Long>
+
+    @Transaction
+    fun mergeSmsAccounts(accounts: List<BankAccountEntity>): List<Long> {
+        val existingAccounts = readAll().associateBy { it.bankAccountNumber }
+        val accountsToUpdate = accounts.mapNotNull { account ->
+            val existing = existingAccounts[account.bankAccountNumber]
+            if (existing != null && (existing.isItFromSms != true ||
+                    (!existing.bankCardNumber.isNullOrBlank() && existing.bankCardNumber != "null"))) {
+                null
+            } else {
+                account.copy(bankCardNumber = existing?.bankCardNumber, isItFromSms = true)
+            }
+        }
+        return insertAll(accountsToUpdate)
+    }
 
     @Query("SELECT * FROM tb_bank_account ORDER BY id DESC")
     fun readAll():List<BankAccountEntity>

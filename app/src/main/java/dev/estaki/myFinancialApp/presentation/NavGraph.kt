@@ -27,12 +27,15 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.runtime.collectAsState
 import androidx.navigation.navArgument
 import dev.estaki.domain.error.MyCustomSnackBarType
 import dev.estaki.myFinancialApp.presentation.addAndEditBankCard.AddOrEditCreditCardScreen
 import dev.estaki.myFinancialApp.presentation.detailScreen.TransactionDetail
 import dev.estaki.myFinancialApp.presentation.main.MainScreen
 import dev.estaki.myFinancialApp.presentation.splash.MySplashScreen
+import dev.estaki.myFinancialApp.presentation.splash.SplashScreenViewModel
 import dev.estaki.myFinancialApp.presentation.states.MyTopAppBarState
 import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
@@ -45,6 +48,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val splashViewModel: SplashScreenViewModel = hiltViewModel()
+    val splashState by splashViewModel.splashScreenState.collectAsState()
 
     var topAppbarState by remember {
         mutableStateOf(
@@ -113,14 +118,14 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
             composable(
                 route = "SplashScreen",
             ) {
-                MySplashScreen(navController = navController) {
+                MySplashScreen(navController = navController, viewModel = splashViewModel) {
                     topAppbarState = it
                 }
             }
             composable(
                 route = "MainScreen",
             ) {
-                MainScreen(navController) {
+                MainScreen(navController, isSyncing = splashState.isSyncing) {
                     topAppbarState = it
                 }
             }

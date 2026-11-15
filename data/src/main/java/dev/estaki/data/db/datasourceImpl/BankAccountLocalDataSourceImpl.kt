@@ -57,7 +57,7 @@ class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao,
     override suspend fun addAll(item: List<BankCardModel>): Flow<List<Long>> =
         flow {
             emit(
-                bankAccountDao.insertAll(item.map { it.toDbEntity() }
+                bankAccountDao.mergeSmsAccounts(item.map { it.toDbEntity() }
                 ))
         }.flowOn(Dispatchers.IO)
 

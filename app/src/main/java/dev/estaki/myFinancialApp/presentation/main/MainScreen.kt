@@ -83,11 +83,13 @@ import kotlin.math.absoluteValue
 fun MainScreen(
     navController: NavHostController,
     viewModel: MainViewModel = hiltViewModel(),
+    isSyncing: Boolean = false,
     onComposing: (MyTopAppBarState) -> Unit
 ) {
     val state by viewModel.mainScreenState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
     var cardsRefreshStarted by remember { mutableStateOf(false) }
+    var cardsRefreshSyncState by remember { mutableStateOf<Boolean?>(null) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -128,15 +130,17 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(viewModel) {
+    LaunchedEffect(viewModel, isSyncing) {
         viewModel.onAction(MainScreenActions.LoadCardsFromDb)
         cardsRefreshStarted = true
+        cardsRefreshSyncState = isSyncing
     }
 
     MainScreenUi(
         modifier = Modifier.fillMaxSize(),
         state = state,
-        cardsRefreshStarted = cardsRefreshStarted,
+        cardsRefreshStarted = cardsRefreshStarted && cardsRefreshSyncState == isSyncing,
+        isSyncing = isSyncing,
         navController = navController,
         onActions = viewModel::onAction
     )
@@ -150,6 +154,7 @@ fun MainScreenUi(
     navController: NavHostController,
     state: MainScreenState,
     cardsRefreshStarted: Boolean,
+    isSyncing: Boolean = false,
     onActions: (MainScreenActions) -> Unit
 ) {
     var firstInit by remember { mutableStateOf(true) }
@@ -163,11 +168,12 @@ fun MainScreenUi(
     LaunchedEffect(
         state.hasLoadedCards,
         cardsRefreshStarted,
+        isSyncing,
         state.isLoadingCards,
         state.listBankAccountNumber,
         state.isError
     ) {
-        if (cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError && state.listBankAccountNumber.isEmpty()) {
+        if (!isSyncing && cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError && state.listBankAccountNumber.isEmpty()) {
             SnackBarController.sendEvent(
                 event = SnackBarEvent(
                     message = "حساب بانکی‌ای برای نمایش پیدا نشد. می‌توانید کارت و تراکنش را به‌صورت دستی اضافه کنید.",
@@ -181,6 +187,13 @@ fun MainScreenUi(
             snapshotFlow { pagerState.settledPage }.collect { page ->
                 val accountNumber = state.listBankAccountNumber.getOrNull(page)?.bankAccountNumber.orEmpty()
                 onActions(MainScreenActions.ReloadSmsByScrollCards(accountNumber))
+            }
+        }
+    }
+    LaunchedEffect(isSyncing) {
+        if (!isSyncing) {
+            state.listBankAccountNumber.getOrNull(pagerState.settledPage)?.let { account ->
+                onActions(MainScreenActions.ReloadSmsByScrollCards(account.bankAccountNumber))
             }
         }
     }
@@ -221,7 +234,7 @@ fun MainScreenUi(
                         }
                     )
                 }
-            } else if (cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError) {
+            } else if (!isSyncing && cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError) {
                 BankCardView(
                     modifier = modifier,
                     listOfBankAccountNumber = emptyList(),
@@ -248,7 +261,7 @@ fun MainScreenUi(
                 )
             }
 
-            if (state.isLoading || ((!cardsRefreshStarted || state.isLoadingCards) && state.listBankAccountNumber.isEmpty())) {
+            if (state.isLoading || ((isSyncing || !cardsRefreshStarted || state.isLoadingCards) && state.listBankAccountNumber.isEmpty())) {
                 Box(modifier.fillMaxSize()) {
                     BallPulseProgressIndicator(
                         modifier = Modifier
@@ -328,7 +341,7 @@ fun MainScreenUi(
 
         }
 
-        FloatingActionButton(
+        if (!isSyncing || state.listBankAccountNumber.isNotEmpty()) FloatingActionButton(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(AppSpacing.Large),

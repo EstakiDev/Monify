@@ -134,7 +134,7 @@ fun SplashScreenUi(
         Animatable(0f)
     }
     LaunchedEffect(true) {
-        alpha.animateTo(1f, animationSpec = tween(1000))
+        alpha.animateTo(1f, animationSpec = tween(250))
     }
 
 
