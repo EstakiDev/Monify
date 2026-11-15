@@ -5,8 +5,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -41,13 +42,13 @@ fun AmountTextField(
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Box(modifier = modifier) {
-            TextField(
+            OutlinedTextField(
                 value = amount,
                 onValueChange = {
                     val newString = it.text.arabicToDecimal().filter { character ->
                         character in '0'..'9' || character == '-' || character == '+'
                     }
-                    if (!newString.matches(Regex("[+-]?[0-9]*"))) return@TextField
+                    if (!newString.matches(Regex("[+-]?[0-9]*"))) return@OutlinedTextField
                     fun normalizedOffset(offset: Int) = it.text.take(offset).count { character ->
                         character.isDigit() || character == '-' || character == '+'
                     }.coerceAtMost(newString.length)
@@ -62,17 +63,18 @@ fun AmountTextField(
                 label = {
                     Text(
                         label,
-                        style = TextStyle(fontSize = 17.sp, fontFamily = ariaFaNumFontFamily),
-                        fontWeight = FontWeight.Bold
+                        style = TextStyle(fontSize = 14.sp, fontFamily = ariaFaNumFontFamily),
+                        fontWeight = FontWeight.Medium
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 visualTransformation = AmountVisualTransformation,
                 textStyle = TextStyle(
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
                     fontFamily = ariaFaNumFontFamily,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Medium
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 trailingIcon = {
@@ -81,9 +83,9 @@ fun AmountTextField(
                         modifier = Modifier
                             .padding(horizontal = 12.dp),
                         style = TextStyle(
-                            fontSize = 17.sp,
+                            fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Medium
                         )
                     )
                 }

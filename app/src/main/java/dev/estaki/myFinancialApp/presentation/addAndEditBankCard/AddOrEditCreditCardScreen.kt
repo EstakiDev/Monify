@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
@@ -18,7 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -57,7 +58,6 @@ import dev.estaki.ui_utils.components.MyOutlinedButton
 import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
-import dev.estaki.ui_utils.ui.theme.RedDark
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
 import kotlinx.coroutines.launch
 
@@ -213,12 +213,13 @@ fun AddOrEditCreditCard(
 
 
 
-            TextField(
+            OutlinedTextField(
                 value = bankName ?: "",
                 onValueChange = {
                     bankName = it
                 },
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 label = {
                     Text(
                         "نام بانک",
@@ -226,30 +227,31 @@ fun AddOrEditCreditCard(
                             fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily
                         ),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Medium
                     )
                 },
                 isError = bankNameErr.first,
-                supportingText = {
-                    Text(text = bankNameErr.second, color = RedDark)
-                },
+                supportingText = if (bankNameErr.first) {
+                    { Text(text = bankNameErr.second) }
+                } else null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = AppSpacing.Small),
                 textStyle = TextStyle(
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontFamily = ariaFaNumFontFamily,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Medium
                 ),
 
                 )
-            TextField(
+            OutlinedTextField(
                 value = bankAccountNumber,
                 onValueChange = {
                     bankAccountNumber = it
                 },
                 readOnly = state.bankCardModel != null,
                 singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 label = {
                     Text(
                         "شماره حساب",
@@ -257,26 +259,26 @@ fun AddOrEditCreditCard(
                             fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily
                         ),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Medium
                     )
                 },
                 isError = bankAccountNumberErr.first,
-                supportingText = {
-                    Text(text = bankAccountNumberErr.second, color = RedDark)
-                },
+                supportingText = if (bankAccountNumberErr.first) {
+                    { Text(text = bankAccountNumberErr.second) }
+                } else null,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = AppSpacing.Small),
                 textStyle = TextStyle(
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontFamily = ariaFaNumFontFamily,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     textDirection = TextDirection.Ltr
                 ),
 
                 )
-            TextField(
+            OutlinedTextField(
                 value = cardNumber,
                 onValueChange = {
 
@@ -293,9 +295,11 @@ fun AddOrEditCreditCard(
 
                 },
                 isError = cardNumberErr.first,
-                supportingText = {
-                    Text(text = cardNumberErr.second, color = RedDark)
-                },
+                supportingText = if (cardNumberErr.first) {
+                    { Text(text = cardNumberErr.second) }
+                } else null,
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
                 label = {
                     Text(
                         "شماره کارت",
@@ -303,7 +307,7 @@ fun AddOrEditCreditCard(
                             fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily
                         ),
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Medium
                     )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -311,9 +315,9 @@ fun AddOrEditCreditCard(
                     .fillMaxWidth()
                     .padding(top = AppSpacing.Small),
                 textStyle = TextStyle(
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     fontFamily = ariaFaNumFontFamily,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Medium,
                     textDirection = TextDirection.Ltr
                 ),
 

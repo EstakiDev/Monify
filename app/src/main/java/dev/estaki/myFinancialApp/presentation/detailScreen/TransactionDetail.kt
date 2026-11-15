@@ -1,8 +1,6 @@
 package dev.estaki.myFinancialApp.presentation.detailScreen
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -37,11 +34,12 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -56,7 +54,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -100,8 +97,6 @@ import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.ui.theme.DarkYellow
 import dev.estaki.ui_utils.ui.theme.LiteRed
-import dev.estaki.ui_utils.ui.theme.LiteWhite
-import dev.estaki.ui_utils.ui.theme.RedDark
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
 import ir.huri.jcal.JalaliCalendar
 import kotlinx.coroutines.launch
@@ -322,29 +317,23 @@ fun TransactionDetailUi(
                 ) {
                     MyCardItem(smsModel = newSmsModel) { }
 
-                    Spacer(modifier = Modifier.size(12.dp))
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Spacer(modifier = Modifier.size(AppSpacing.Large))
+                    Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium)) {
                         AmountTextField(
                             amount = amount,
-                            modifier = Modifier.fillMaxWidth(0.5F),
+                            modifier = Modifier.fillMaxWidth(),
                             unit = "ريال",
                             isError = amountErr.first,
-                            supportingText = {
-                                Text(
-                                    text = amountErr.second,
-                                    color = if (timeErr.first) RedDark else LiteWhite,
-                                    lineHeight = 14.sp
-                                )
-                            }
+                            supportingText = if (amountErr.first) {
+                                { Text(text = amountErr.second) }
+                            } else null
 
                         ) {
                             Timber.tag("TAG").d("length: ${it.selection.length}")
                             Timber.tag("TAG").d("length+1: ${it.selection.length + 1}")
                             amount = it
                         }
-                        Spacer(modifier = Modifier.size(12.dp))
-
-                        TextField(
+                        OutlinedTextField(
                             value = bankName,
                             onValueChange = {
                                 bankName = it
@@ -353,58 +342,54 @@ fun TransactionDetailUi(
                                 Text(
                                     "نام بانک", style = TextStyle(
                                         fontSize = 14.sp, fontFamily = ariaFaNumFontFamily
-                                    ), fontWeight = FontWeight.Bold
+                                    ), fontWeight = FontWeight.Medium
                                 )
                             },
                             isError = bankNameErr.first,
                             readOnly = true,
-                            supportingText = {
-                                Text(
-                                    text = bankNameErr.second,
-                                    color = if (timeErr.first) RedDark else LiteWhite,
-                                    lineHeight = 14.sp
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(1F),
+                            singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
+                            supportingText = if (bankNameErr.first) {
+                                { Text(text = bankNameErr.second) }
+                            } else null,
+                            modifier = Modifier.fillMaxWidth(),
                             textStyle = TextStyle(
-                                fontSize = 17.sp,
+                                fontSize = 16.sp,
                                 fontFamily = ariaFaNumFontFamily,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Medium
                             ),
 
                             )
                     }
-                    Spacer(modifier = Modifier.size(12.dp))
+                    Spacer(modifier = Modifier.size(AppSpacing.Medium))
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium)) {
 
-                        TextField(
-                            modifier = Modifier.fillMaxWidth(0.5F),
+                        OutlinedTextField(
+                            modifier = Modifier.weight(1f),
                             interactionSource = dateInteractionSource,
                             value = date,
                             onValueChange = {
                                 date = it
                             },
                             readOnly = true,
+                            singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
                             label = {
                                 Text(
                                     text = "تاریخ", style = TextStyle(
-                                        fontSize = 17.sp, fontFamily = ariaFaNumFontFamily
-                                    ), fontWeight = FontWeight.Bold
+                                        fontSize = 14.sp, fontFamily = ariaFaNumFontFamily
+                                    ), fontWeight = FontWeight.Medium
                                 )
                             },
                             isError = dateErr.first,
-                            supportingText = {
-                                Text(
-                                    text = dateErr.second,
-                                    color = if (dateErr.first) RedDark else LiteWhite,
-                                    lineHeight = 14.sp
-                                )
-                            },
+                            supportingText = if (dateErr.first) {
+                                { Text(text = dateErr.second) }
+                            } else null,
                             textStyle = TextStyle(
-                                fontSize = 17.sp,
+                                fontSize = 16.sp,
                                 fontFamily = ariaFaNumFontFamily,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Medium
                             )
                         )
 
@@ -414,36 +399,32 @@ fun TransactionDetailUi(
 
                         }
 
-                        Spacer(modifier = Modifier.size(12.dp))
-
-                        TextField(
+                        OutlinedTextField(
                             value = time,
                             onValueChange = {
                                 time = it
                             },
                             readOnly = true,
+                            singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
                             interactionSource = timeInteractionSource,
                             label = {
                                 Text(
                                     "ساعت", style = TextStyle(
-                                        fontSize = 17.sp, fontFamily = ariaFaNumFontFamily
-                                    ), fontWeight = FontWeight.Bold
+                                        fontSize = 14.sp, fontFamily = ariaFaNumFontFamily
+                                    ), fontWeight = FontWeight.Medium
                                 )
                             },
                             isError = timeErr.first,
-                            supportingText = {
-                                Text(
-                                    text = timeErr.second,
-                                    color = if (timeErr.first) RedDark else LiteWhite,
-                                    lineHeight = 14.sp
-                                )
-                            },
+                            supportingText = if (timeErr.first) {
+                                { Text(text = timeErr.second) }
+                            } else null,
                             textStyle = TextStyle(
-                                fontSize = 17.sp,
+                                fontSize = 16.sp,
                                 fontFamily = ariaFaNumFontFamily,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Medium
                             ),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.weight(1f),
                         )
                         if (timeInteractionSource.collectIsPressedAsState().value) {
                             timePickerState.value = true
@@ -527,39 +508,30 @@ fun TransactionDetailUi(
                         }
                     }
                 }
-                Text(
-                    text = "انتخاب حساب:", Modifier.padding(start = AppSpacing.Large),
-                    fontFamily = ariaFaNumFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                )
-                Surface(
-                    modifier = Modifier
-                        .padding(horizontal = AppSpacing.Large)
-                        .wrapContentWidth()
-                        .height(45.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(LiteWhite)
-                        .clickable(onClick = {
-                            bankCardDropDownExpanded = true
-                        })
-                        .padding(horizontal = 8.dp)
-
-                ) {
-                    Column(
-                        modifier = Modifier.background(LiteWhite),
-                        verticalArrangement = Arrangement.Center
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.Large)) {
+                    Text(
+                        text = "انتخاب حساب",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = AppSpacing.Small)
+                    )
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(16.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        onClick = { bankCardDropDownExpanded = true }
                     ) {
                         Row(
+                            modifier = Modifier.fillMaxWidth().padding(AppSpacing.Large),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(Icons.Rounded.ArrowDropDown, contentDescription = "")
                             Text(
                                 text = bankAccountNumber.ifBlank { "انتخاب کنید" },
-                                Modifier.padding(start = 12.dp),
+                                Modifier.padding(start = AppSpacing.Medium),
                                 fontFamily = ariaFaNumFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 16.sp,
                             )
                             DropdownMenu(
                                 expanded = bankCardDropDownExpanded,
@@ -582,25 +554,23 @@ fun TransactionDetailUi(
                             }
 
                         }
-                        AnimatedVisibility(bankAccountNumberErr.first) {
-                            Text(
-                                text = bankAccountNumberErr.second,
-                                modifier = Modifier.alpha(if (bankAccountNumberErr.first) 1F else 0F),
-                                color = RedDark,
-                                fontSize = 12.sp
-
-                            )
-                        }
-
                     }
-
+                    AnimatedVisibility(bankAccountNumberErr.first) {
+                        Text(
+                            text = bankAccountNumberErr.second,
+                            modifier = Modifier.padding(start = AppSpacing.Large, top = AppSpacing.ExtraSmall),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
 
-                TextField(
+                OutlinedTextField(
                     modifier = Modifier
                         .padding(AppSpacing.Large)
-                        .fillMaxSize()
-                        .height(200.dp),
+                        .fillMaxWidth()
+                        .height(160.dp),
+                    shape = RoundedCornerShape(16.dp),
                     textStyle = TextStyle(
                         fontSize = 15.sp,
                         fontFamily = ariaFaNumFontFamily,
@@ -609,18 +579,17 @@ fun TransactionDetailUi(
                     placeholder = {
                         Text(
                             fontFamily = ariaFaNumFontFamily,
-                            fontWeight = FontWeight.Black,
+                            fontWeight = FontWeight.Normal,
                             text = "توضیحات تراکنشت رو اینجا وارد کن...",
-                            fontSize = 18.sp
+                            fontSize = 14.sp
                         )
                     },
                     label = {
                         Text(
-                            modifier = Modifier.padding(bottom = 16.dp),
                             fontFamily = ariaFaNumFontFamily,
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Medium,
                             text = "توضیحات",
-                            fontSize = 18.sp,
+                            fontSize = 14.sp,
                         )
                     },
                     value = text,
@@ -631,10 +600,10 @@ fun TransactionDetailUi(
                 Spacer(Modifier.size(8.dp))
 
                 Text(
-                    text = "دسته بندی:", Modifier.padding(start = AppSpacing.Large),
-                    fontFamily = ariaFaNumFontFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
+                    text = "دسته بندی",
+                    modifier = Modifier.padding(start = AppSpacing.Large, bottom = AppSpacing.Small),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 LazyRow(
