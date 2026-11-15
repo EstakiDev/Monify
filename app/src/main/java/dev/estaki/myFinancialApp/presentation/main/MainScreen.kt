@@ -1,7 +1,15 @@
 package dev.estaki.myFinancialApp.presentation.main
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +24,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
@@ -46,6 +54,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,6 +69,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndicator
 import dev.estaki.domain.error.MyCustomSnackBarType
 import dev.estaki.domain.models.BankCardModel
+import dev.estaki.domain.models.SmsModel
 import dev.estaki.kt_pure_utils.formatAmountForDisplay
 import dev.estaki.kt_pure_utils.toPersianDigits
 import dev.estaki.myFinancialApp.presentation.actions.MainScreenActions
@@ -76,6 +86,14 @@ import dev.estaki.ui_utils.utils.isScrollingUp
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.math.absoluteValue
+
+private data class AccountTransactions(
+    val accountNumber: String,
+    val transactions: List<SmsModel>,
+    val income: String,
+    val expense: String,
+    val hasUnparsedAmounts: Boolean
+)
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -158,7 +176,8 @@ fun MainScreenUi(
     onActions: (MainScreenActions) -> Unit
 ) {
     var firstInit by remember { mutableStateOf(true) }
-    val lazyColumnState = rememberLazyListState()
+    val accountScrollStates = remember { mutableMapOf<String, LazyListState>() }
+    val lazyColumnState = accountScrollStates.getOrPut(state.currentBankAccountNumber) { LazyListState() }
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0F,
@@ -261,7 +280,8 @@ fun MainScreenUi(
                 )
             }
 
-            if (state.isLoading || ((isSyncing || !cardsRefreshStarted || state.isLoadingCards) && state.listBankAccountNumber.isEmpty())) {
+            if ((state.isLoading && state.currentBankAccountNumber.isBlank()) ||
+                ((isSyncing || !cardsRefreshStarted || state.isLoadingCards) && state.listBankAccountNumber.isEmpty())) {
                 Box(modifier.fillMaxSize()) {
                     BallPulseProgressIndicator(
                         modifier = Modifier
@@ -278,64 +298,74 @@ fun MainScreenUi(
                 }
 
             } else {
-                Column {
-                    if (state.smsList.isNotEmpty()) {
-                        TransactionSummary(state.incomeTotal, state.expenseTotal, state.hasUnparsedAmounts)
-                    }
-                    Row {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = AppSpacing.Large, vertical = AppSpacing.Small)
-                                .alpha(if (state.smsList.isNotEmpty()) 1F else 0F)
-                        ) {
-                            Text(
-                                text = "تعداد تراکنش های این حساب: ",
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = "${state.smsList.size} عدد ".toPersianDigits(),
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
-                    Surface(shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)) {
-
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .wrapContentHeight(),
-                            contentPadding = PaddingValues(
-                                top = AppSpacing.ExtraSmall,
-                                start = AppSpacing.Large,
-                                end = AppSpacing.Large,
-                                bottom = 150.dp
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(AppSpacing.Small),
-                            state = lazyColumnState
-                        ) {
-
-                            items(
-                                count = state.smsList.size,
-                                key = { index -> state.smsList[index].id ?: "transaction-$index" }
-                            ) { itemIndex ->
-                                MyCardItem(
-                                    state.smsList[itemIndex],
-                                    onCardClick = { navController.navigate("AddDetailScreen/${state.smsList[itemIndex].id}") })
-//                                ShimmerListItems(
-//                                    isLoading = state.isLoading,
-//                                    contentAfterLoading = {
-//                                        if (state.smsList.isNotEmpty()) {
-//
-//                                        }
-//
-//                                    })
-
+                Box(modifier = Modifier.fillMaxSize()) {
+                    AnimatedContent(
+                        targetState = AccountTransactions(
+                            state.currentBankAccountNumber,
+                            state.smsList,
+                            state.incomeTotal,
+                            state.expenseTotal,
+                            state.hasUnparsedAmounts
+                        ),
+                        contentKey = { it.accountNumber },
+                        transitionSpec = {
+                            (fadeIn(tween(260)) + slideInVertically(tween(260)) { it / 24 }) togetherWith
+                                (fadeOut(tween(180)) + slideOutVertically(tween(180)) { -it / 24 })
+                        },
+                        label = "account transactions"
+                    ) { account ->
+                        Column {
+                            if (account.transactions.isNotEmpty()) {
+                                TransactionSummary(account.income, account.expense, account.hasUnparsedAmounts)
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = AppSpacing.Large, vertical = AppSpacing.Small)
+                                    .alpha(if (account.transactions.isNotEmpty()) 1F else 0F)
+                            ) {
+                                Text(
+                                    text = "تعداد تراکنش های این حساب: ",
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "${account.transactions.size} عدد ".toPersianDigits(),
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 14.sp
+                                )
+                            }
+                            Surface(shape = RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp)) {
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize().wrapContentHeight(),
+                                    contentPadding = PaddingValues(
+                                        top = AppSpacing.ExtraSmall,
+                                        start = AppSpacing.Large,
+                                        end = AppSpacing.Large,
+                                        bottom = 150.dp
+                                    ),
+                                    verticalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+                                    state = accountScrollStates.getOrPut(account.accountNumber) { LazyListState() }
+                                ) {
+                                    items(
+                                        count = account.transactions.size,
+                                        key = { index -> account.transactions[index].id ?: "transaction-$index" }
+                                    ) { itemIndex ->
+                                        val transaction = account.transactions[itemIndex]
+                                        MyCardItem(
+                                            transaction,
+                                            onCardClick = {
+                                                if (!state.isLoading && account.accountNumber == state.currentBankAccountNumber) {
+                                                    navController.navigate("AddDetailScreen/${transaction.id}")
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
+                    AccountLoadingOverlay(isLoading = state.isLoading)
                 }
             }
 
@@ -373,6 +403,48 @@ fun MainScreenUi(
 }
 
 @Composable
+private fun AccountLoadingOverlay(isLoading: Boolean) {
+    AnimatedVisibility(
+        visible = isLoading,
+        enter = fadeIn(tween(durationMillis = 160, delayMillis = 180)),
+        exit = fadeOut(tween(160))
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f))
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) awaitPointerEvent().changes.forEach { it.consume() }
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                tonalElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = AppSpacing.Large, vertical = AppSpacing.Medium),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    BallPulseProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        animationDuration = 800,
+                        animationDelay = 200,
+                        startDelay = 0,
+                        ballCount = 3,
+                        maxBallDiameter = 6.dp
+                    )
+                    Text("در حال به‌روزرسانی", style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun TransactionSummary(income: String, expense: String, hasUnparsedAmounts: Boolean) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.Large, vertical = AppSpacing.ExtraSmall)) {
         Row(
@@ -406,11 +478,17 @@ private fun SummaryAmount(title: String, amount: String, modifier: Modifier, isI
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
     ) {
         Column(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = Modifier.size(6.dp).background(accent, CircleShape))
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
             Text(
                 text = amount.formatAmountForDisplay(),
                 style = MaterialTheme.typography.titleSmall,
@@ -436,13 +514,25 @@ fun BankCardView(
 ) {
 
     Column {
-        Text(
-            "حساب های موجود در پیامک ها",
-            modifier = Modifier
-                .padding(start = AppSpacing.Large, top = AppSpacing.ExtraLarge, bottom = AppSpacing.Medium),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Black
-        )
+        Column(
+            modifier = Modifier.padding(
+                start = AppSpacing.Large,
+                end = AppSpacing.Large,
+                top = AppSpacing.Medium,
+                bottom = AppSpacing.Medium
+            )
+        ) {
+            Text(
+                text = "حساب‌های من",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "برای دیدن حساب‌ها، کارت‌ها را ورق بزن",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         Surface(modifier = Modifier.padding(bottom = AppSpacing.Small)) {
             HorizontalPager(
                 state = pagerState,
@@ -454,20 +544,16 @@ fun BankCardView(
                     modifier = Modifier
                         .height(225.dp)
                         .graphicsLayer {
-                            // Calculate the absolute offset for the current page from the
-                            // scroll position. We use the absolute value which allows us to mirror
-                            // any effects for both directions
                             val pageOffset = (
                                     (pagerState.currentPage - page) + pagerState
                                         .currentPageOffsetFraction
                                     ).absoluteValue
 
-                            // We animate the alpha, between 50% and 100%
-                            alpha = lerp(
-                                start = 0.5f,
-                                stop = 1f,
-                                fraction = 1f - pageOffset.coerceIn(0f, 1f)
-                            )
+                            val fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                            alpha = lerp(start = 0.7f, stop = 1f, fraction = fraction)
+                            val scale = lerp(start = 0.96f, stop = 1f, fraction = fraction)
+                            scaleX = scale
+                            scaleY = scale
                         }) {
                     if (page == pagerState.pageCount - 1)
                         AddCreditCard {
@@ -499,8 +585,14 @@ fun BankCardView(
             horizontalArrangement = Arrangement.Center
         ) {
             repeat(pagerState.pageCount) { iteration ->
-                val color =
-                    if (pagerState.currentPage == iteration) Color.LightGray else Color.DarkGray
+                val isSelected = pagerState.currentPage == iteration
+                val color = if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                val indicatorWidth by animateDpAsState(
+                    targetValue = if (isSelected) 18.dp else 6.dp,
+                    animationSpec = tween(220),
+                    label = "page indicator"
+                )
                 Box(
                     modifier = Modifier
                         .padding(2.dp)
@@ -508,7 +600,7 @@ fun BankCardView(
                         .background(color)
                         .size(
                             height = 6.dp,
-                            width = if (pagerState.currentPage == iteration) 18.dp else 6.dp
+                            width = indicatorWidth
                         )
                 )
             }
