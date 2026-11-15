@@ -1,5 +1,9 @@
 package dev.estaki.myFinancialApp.presentation.main
 
+import dev.estaki.ui_utils.AppAppearance
+import dev.estaki.ui_utils.AppLanguage
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -11,7 +15,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -117,7 +121,7 @@ fun MainScreen(
                     Timber.i("Composable is visible")
                     onComposing(
                         MyTopAppBarState(
-                            title = "مانیفای",
+                            title = localized("مانیفای"),
                         )
                     )
 
@@ -195,7 +199,7 @@ fun MainScreenUi(
         if (!isSyncing && cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError && state.listBankAccountNumber.isEmpty()) {
             SnackBarController.sendEvent(
                 event = SnackBarEvent(
-                    message = "حساب بانکی‌ای برای نمایش پیدا نشد. می‌توانید کارت و تراکنش را به‌صورت دستی اضافه کنید.",
+                    message = localized("حساب بانکی‌ای برای نمایش پیدا نشد. می‌توانید کارت و تراکنش را به‌صورت دستی اضافه کنید."),
                     type = MyCustomSnackBarType.ERROR
                 )
             )
@@ -287,7 +291,7 @@ fun MainScreenUi(
                         modifier = Modifier
                             .align(Alignment.Center)
                             .padding(0.dp, 32.dp),
-                        color = if (isSystemInDarkTheme()) ColorTextGrayOnDarkTheme else ColorTextGrayOnLiteTheme,
+                        color = if (LocalDarkTheme.current) ColorTextGrayOnDarkTheme else ColorTextGrayOnLiteTheme,
                         animationDuration = 800,
                         animationDelay = 200,
                         startDelay = 0,
@@ -325,12 +329,12 @@ fun MainScreenUi(
                                     .alpha(if (account.transactions.isNotEmpty()) 1F else 0F)
                             ) {
                                 Text(
-                                    text = "تعداد تراکنش های این حساب: ",
+                                    text = localized("تعداد تراکنش های این حساب: "),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 14.sp
                                 )
                                 Text(
-                                    text = "${account.transactions.size} عدد ".toPersianDigits(),
+                                    text = if (AppAppearance.language == AppLanguage.PERSIAN) "${account.transactions.size} عدد ".toPersianDigits() else account.transactions.size.toString(),
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 14.sp
                                 )
@@ -380,7 +384,7 @@ fun MainScreenUi(
                     if (state.listBankAccountNumber.isEmpty()) {
                         SnackBarController.sendEvent(
                             event = SnackBarEvent(
-                                message = "افزودن تراکنش بانکی پس از تعریف یک کارت اعتباری و شماره حساب امکان پذیر خواهد بود. \n لطفا ابتدا کارت اعتباری را اضافه کنید. ",
+                                message = localized("افزودن تراکنش بانکی پس از تعریف یک کارت اعتباری و شماره حساب امکان پذیر خواهد بود. \n لطفا ابتدا کارت اعتباری را اضافه کنید. "),
                                 type = MyCustomSnackBarType.ERROR
                             )
                         )
@@ -437,7 +441,7 @@ private fun AccountLoadingOverlay(isLoading: Boolean) {
                         ballCount = 3,
                         maxBallDiameter = 6.dp
                     )
-                    Text("در حال به‌روزرسانی", style = MaterialTheme.typography.labelLarge)
+                    Text(localized("در حال به‌روزرسانی"), style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -451,12 +455,12 @@ private fun TransactionSummary(income: String, expense: String, hasUnparsedAmoun
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)
         ) {
-            SummaryAmount("مجموع واریز", income, Modifier.weight(1f), isIncome = true)
-            SummaryAmount("مجموع برداشت", expense, Modifier.weight(1f), isIncome = false)
+            SummaryAmount(localized("مجموع واریز"), income, Modifier.weight(1f), isIncome = true)
+            SummaryAmount(localized("مجموع برداشت"), expense, Modifier.weight(1f), isIncome = false)
         }
         if (hasUnparsedAmounts) {
             Text(
-                text = "مبلغ بعضی تراکنش‌ها در مجموع محاسبه نشده است.",
+                text = localized("مبلغ بعضی تراکنش‌ها در مجموع محاسبه نشده است."),
                 modifier = Modifier.padding(top = AppSpacing.ExtraSmall),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -468,9 +472,9 @@ private fun TransactionSummary(income: String, expense: String, hasUnparsedAmoun
 @Composable
 private fun SummaryAmount(title: String, amount: String, modifier: Modifier, isIncome: Boolean) {
     val accent = if (isIncome) {
-        if (isSystemInDarkTheme()) Color(0xFF70D7B3) else Color(0xFF087858)
+        if (LocalDarkTheme.current) Color(0xFF70D7B3) else Color(0xFF087858)
     } else {
-        if (isSystemInDarkTheme()) Color(0xFFFFA7A5) else Color(0xFFB84045)
+        if (LocalDarkTheme.current) Color(0xFFFFA7A5) else Color(0xFFB84045)
     }
     Surface(
         modifier = modifier,
@@ -490,13 +494,13 @@ private fun SummaryAmount(title: String, amount: String, modifier: Modifier, isI
                 )
             }
             Text(
-                text = amount.formatAmountForDisplay(),
+                text = amount.formatAmountForDisplay(persianDigits = AppAppearance.language == AppLanguage.PERSIAN),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = accent
             )
             Text(
-                text = "ریال",
+                text = localized("ریال"),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -523,12 +527,12 @@ fun BankCardView(
             )
         ) {
             Text(
-                text = "حساب‌های من",
+                text = localized("حساب‌های من"),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "برای دیدن حساب‌ها، کارت‌ها را ورق بزن",
+                text = localized("برای دیدن حساب‌ها، کارت‌ها را ورق بزن"),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

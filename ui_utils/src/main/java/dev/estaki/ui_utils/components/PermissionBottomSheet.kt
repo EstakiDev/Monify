@@ -1,5 +1,7 @@
 package dev.estaki.ui_utils.components
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +30,7 @@ fun PermissionBottomSheet(
     onBtnGetPermissionClicked: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
 
         ModalBottomSheet(
             onDismissRequest = onDismissRequest
@@ -45,7 +47,7 @@ fun PermissionBottomSheet(
             ) {
                 Text(
                     modifier = Modifier.padding(horizontal = AppSpacing.Small),
-                    text = "سلام رفیق\n اپلیکیشن برای این که بتونه پیامک تراکنش های بانکی تو رو بهت نشون بده نیاز داره که تو این دسترسی رو تایید کنی.",
+                    text = localized("سلام رفیق\n اپلیکیشن برای این که بتونه پیامک تراکنش های بانکی تو رو بهت نشون بده نیاز داره که تو این دسترسی رو تایید کنی."),
                     fontFamily = ariaFaNumFontFamily,
                     fontSize = 15.sp,
                     lineHeight = 25.sp,
@@ -54,7 +56,7 @@ fun PermissionBottomSheet(
 
                 MyOutlinedButton(
                     modifier = modifier.padding(vertical = AppSpacing.ExtraLarge),
-                    text = "تایید دسترسی"
+                    text = localized("تایید دسترسی")
                 ) {
                     onBtnGetPermissionClicked.invoke()
                 }

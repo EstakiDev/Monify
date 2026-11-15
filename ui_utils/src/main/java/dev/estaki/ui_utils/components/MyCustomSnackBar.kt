@@ -1,5 +1,7 @@
 package dev.estaki.ui_utils.components
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -36,7 +38,7 @@ import timber.log.Timber
 
 @Composable
 fun MyCustomSnackBar(modifier: Modifier = Modifier,snackBarEvent: SnackBarEvent,type :MyCustomSnackBarType,onAction: () -> Unit ) {
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
 
         Card(
             modifier
@@ -57,7 +59,7 @@ fun MyCustomSnackBar(modifier: Modifier = Modifier,snackBarEvent: SnackBarEvent,
                     modifier = modifier
                         .padding(vertical = 8.dp)
                         .fillMaxWidth(fraction = 0.7F),
-                    text = snackBarEvent.message,
+                    text = localized(snackBarEvent.message),
                     fontFamily = ariaFaNumFontFamily,
                     fontWeight = FontWeight.Normal,
                     fontSize = 16.sp, lineHeight = 20.sp
@@ -66,7 +68,7 @@ fun MyCustomSnackBar(modifier: Modifier = Modifier,snackBarEvent: SnackBarEvent,
                     onAction.invoke()
                     Timber.i("TextButton clicked")
                 }) {
-                    Text(snackBarEvent.action?.name ?: "باشه", fontFamily = ariaFaNumFontFamily)
+                    Text(snackBarEvent.action?.name ?: localized("باشه"), fontFamily = ariaFaNumFontFamily)
                 }
             }
         }

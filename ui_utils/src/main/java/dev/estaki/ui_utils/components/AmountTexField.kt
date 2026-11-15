@@ -1,5 +1,9 @@
 package dev.estaki.ui_utils.components
 
+import dev.estaki.ui_utils.localized
+import dev.estaki.ui_utils.AppAppearance
+import dev.estaki.ui_utils.AppLanguage
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,7 +38,7 @@ import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
 fun AmountTextField(
     modifier: Modifier = Modifier,
     amount: TextFieldValue,
-    label: String = "مبلغ",
+    label: String = localized("مبلغ"),
     unit: String,
     isError: Boolean = false,
     supportingText : @Composable (()->Unit)? = null,
@@ -70,7 +74,7 @@ fun AmountTextField(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
-                visualTransformation = AmountVisualTransformation,
+                visualTransformation = AmountVisualTransformation(AppAppearance.language == AppLanguage.PERSIAN),
                 textStyle = TextStyle(
                     fontSize = 16.sp,
                     fontFamily = ariaFaNumFontFamily,
@@ -94,22 +98,22 @@ fun AmountTextField(
     }
 }
 
-private object AmountVisualTransformation : VisualTransformation {
+private class AmountVisualTransformation(private val persianDigits: Boolean) : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-        val formatted = text.text.formatAmountForDisplay()
+        val formatted = text.text.formatAmountForDisplay(persianDigits)
         val mapping = object : OffsetMapping {
             override fun originalToTransformed(offset: Int): Int {
                 var originalIndex = 0
                 var transformedIndex = 0
                 while (originalIndex < offset && transformedIndex < formatted.length) {
-                    if (formatted[transformedIndex] != '٬') originalIndex++
+                    if (formatted[transformedIndex] != '٬' && formatted[transformedIndex] != ',') originalIndex++
                     transformedIndex++
                 }
                 return transformedIndex
             }
 
             override fun transformedToOriginal(offset: Int): Int =
-                formatted.take(offset).count { it != '٬' }.coerceAtMost(text.length)
+                formatted.take(offset).count { it != '٬' && it != ',' }.coerceAtMost(text.length)
         }
         return TransformedText(AnnotatedString(formatted), mapping)
     }
@@ -119,7 +123,7 @@ private object AmountVisualTransformation : VisualTransformation {
 @Composable
 fun AmountTextFieldPreview() {
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        AmountTextField(amount = TextFieldValue(text = "12,450"), unit = "تومان") {
+        AmountTextField(amount = TextFieldValue(text = "12,450"), unit = localized("تومان")) {
 
         }
     }

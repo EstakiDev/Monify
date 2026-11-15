@@ -1,5 +1,7 @@
 package dev.estaki.myFinancialApp
 
+import dev.estaki.ui_utils.localized
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -47,8 +49,8 @@ class SmsReceiver : BroadcastReceiver() {
                 upsertSms(transaction)
                 NotificationHandler.showSmsNotification(
                     appContext,
-                    title = "تراکنش بانکی جدید",
-                    message = "برای مشاهده جزئیات، برنامه را باز کنید."
+                    title = localized("تراکنش بانکی جدید"),
+                    message = localized("برای مشاهده جزئیات، برنامه را باز کنید.")
                 )
                 WorkersEngine.scheduleSmsRemindersWithWorkManager(
                     duration = 4,

@@ -1,5 +1,9 @@
 package dev.estaki.myFinancialApp.presentation.timepicker
 
+import dev.estaki.ui_utils.localized
+import dev.estaki.ui_utils.AppAppearance
+import dev.estaki.ui_utils.AppLanguage
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -51,15 +55,16 @@ fun MyTimePicker(
                 Spacer(modifier = Modifier.size(AppSpacing.ExtraLarge))
 
                 val typography = MaterialTheme.typography
+                val pickerFont = if (AppAppearance.language == AppLanguage.PERSIAN) iranSansFaNumFontFamily else FontFamily.Default
                 MaterialTheme(
                     typography = typography.copy(
                         displayLarge = typography.displayLarge.copy(
-                            fontFamily = iranSansFaNumFontFamily,
+                            fontFamily = pickerFont,
                             fontSize = 48.sp,
                             fontWeight = FontWeight.Medium
                         ),
                         bodyLarge = typography.bodyLarge.copy(
-                            fontFamily = iranSansFaNumFontFamily,
+                            fontFamily = pickerFont,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -78,12 +83,12 @@ fun MyTimePicker(
                 ) {
                     TextButton(onClick = onDismiss) {
                         Text(
-                            text = "انصراف",
+                            text = localized("انصراف"),
                             fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.vazirmatn_bold))
                         )
                     }
                     TextButton(onClick = { onConfirm.invoke(timePickerState) }) {
-                        Text(text = "تایید", fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.vazirmatn_bold)))
+                        Text(text = localized("تایید"), fontFamily = FontFamily(Font(dev.estaki.ui_utils.R.font.vazirmatn_bold)))
                     }
                 }
 

@@ -1,7 +1,9 @@
 package dev.estaki.myFinancialApp.presentation.main
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
+import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,19 +32,21 @@ import androidx.compose.ui.unit.sp
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.formatAmountForDisplay
-import dev.estaki.kt_pure_utils.toPersianDigits
+import dev.estaki.ui_utils.localizedDigits
+import dev.estaki.ui_utils.AppAppearance
+import dev.estaki.ui_utils.AppLanguage
 import dev.estaki.ui_utils.ui.theme.AppSpacing
 
 @Composable
 fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
     val isIncome = smsModel.transactionType == TransactionType.DEPOSIT
     val accent = if (isIncome) {
-        if (isSystemInDarkTheme()) Color(0xFF70D7B3) else Color(0xFF087858)
+        if (LocalDarkTheme.current) Color(0xFF70D7B3) else Color(0xFF087858)
     } else {
-        if (isSystemInDarkTheme()) Color(0xFFFFA7A5) else Color(0xFFB84045)
+        if (LocalDarkTheme.current) Color(0xFFFFA7A5) else Color(0xFFB84045)
     }
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
         Card(
             modifier = Modifier.fillMaxWidth().then(smsItemInteraction(smsModel, onCardClick)),
             shape = RoundedCornerShape(18.dp),
@@ -67,12 +71,12 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
                 }
                 Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        text = if (isIncome) "واریز" else "برداشت",
+                        text = if (isIncome) localized("واریز") else localized("برداشت"),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = smsModel.bankName.toPersianDigits(),
+                        text = smsModel.bankName.localizedDigits(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -80,20 +84,20 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
                     )
                     Text(
                         text = listOf(smsModel.transactionDate, smsModel.transactionTime)
-                            .filter { it.isNotBlank() && it != "-" }.joinToString("  ·  ").toPersianDigits(),
+                            .filter { it.isNotBlank() && it != "-" }.joinToString("  ·  ").localizedDigits(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
-                        text = smsModel.transactionAmount.formatAmountForDisplay(),
+                        text = smsModel.transactionAmount.formatAmountForDisplay(persianDigits = AppAppearance.language == AppLanguage.PERSIAN),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = accent
                     )
                     Text(
-                        text = "ریال",
+                        text = localized("ریال"),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -109,13 +113,13 @@ fun MyCardItemPreview() {
     MyCardItem(
         smsModel = SmsModel(
             id = 1L,
-            bankName = "بانک نمونه",
+            bankName = localized("بانک نمونه"),
             bankAccountNumber = "1234",
             transactionType = TransactionType.DEPOSIT,
             transactionAmount = "1250000",
-            transactionDate = "۱۴۰۳/۰۱/۰۱",
+            transactionDate = localized("۱۴۰۳/۰۱/۰۱"),
             transactionDateTime = 0L,
-            transactionTime = "۱۲:۳۰",
+            transactionTime = localized("۱۲:۳۰"),
             bankCardBalance = "0",
             categoryIds = emptyList(),
             description = null,

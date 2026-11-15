@@ -1,6 +1,8 @@
 package dev.estaki.myFinancialApp.presentation.addAndEditBankCard
 
-import androidx.compose.foundation.isSystemInDarkTheme
+import dev.estaki.ui_utils.localized
+
+import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
@@ -59,6 +61,9 @@ import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
+import dev.estaki.ui_utils.AppAppearance
+import dev.estaki.ui_utils.AppLanguage
+import androidx.compose.ui.text.input.VisualTransformation
 import dev.estaki.ui_utils.utils.PersianDigitsTransformation
 import kotlinx.coroutines.launch
 
@@ -79,7 +84,7 @@ fun AddOrEditCreditCardScreen(
     DisposableEffect(state) {
         onComposing(
             MyTopAppBarState(
-                title =  if (state.isLoading) "درحال بارگذاری..." else if (state.bankCardModel != null) "ویرایش جزئیات کارت" else "افزودن کارت",
+                title =  if (state.isLoading) localized("درحال بارگذاری...") else if (state.bankCardModel != null) localized("ویرایش جزئیات کارت") else localized("افزودن کارت"),
                 actions = {
                     state.bankCardModel?.let {
                         if (it.isItFromSms == null || it.isItFromSms == false)
@@ -110,7 +115,7 @@ fun AddOrEditCreditCardScreen(
             onDispose {
                 onComposing(
                     MyTopAppBarState(
-                        title = "درحال بارگذاری...",
+                        title = localized("درحال بارگذاری..."),
                     )
                 )
             }
@@ -128,8 +133,8 @@ fun AddOrEditCreditCardScreen(
                 showWarningDialog =false
                 navController.navigateUp()
             },
-            "هشدار",
-            "از حذف کردن این کارت بانکی اطمینان دارید؟",
+            localized("هشدار"),
+            localized("از حذف کردن این کارت بانکی اطمینان دارید؟"),
             icon = Icons.Rounded.Warning
         )
     }
@@ -184,7 +189,7 @@ fun AddOrEditCreditCard(
             BallPulseProgressIndicator(
                 modifier = Modifier
                     .align(Alignment.Center),
-                color = if (isSystemInDarkTheme()) ColorTextGrayOnDarkTheme else ColorTextGrayOnLiteTheme,
+                color = if (LocalDarkTheme.current) ColorTextGrayOnDarkTheme else ColorTextGrayOnLiteTheme,
                 animationDuration = 800,
                 animationDelay = 200,
                 startDelay = 0,
@@ -216,7 +221,7 @@ fun AddOrEditCreditCard(
 
             OutlinedTextField(
                 value = bankName ?: "",
-                visualTransformation = PersianDigitsTransformation,
+                visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                 onValueChange = {
                     bankName = it
                 },
@@ -224,7 +229,7 @@ fun AddOrEditCreditCard(
                 shape = RoundedCornerShape(16.dp),
                 label = {
                     Text(
-                        "نام بانک",
+                        localized("نام بانک"),
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily
@@ -248,7 +253,7 @@ fun AddOrEditCreditCard(
                 )
             OutlinedTextField(
                 value = bankAccountNumber,
-                visualTransformation = PersianDigitsTransformation,
+                visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                 onValueChange = {
                     bankAccountNumber = it
                 },
@@ -257,7 +262,7 @@ fun AddOrEditCreditCard(
                 shape = RoundedCornerShape(16.dp),
                 label = {
                     Text(
-                        "شماره حساب",
+                        localized("شماره حساب"),
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily
@@ -283,7 +288,7 @@ fun AddOrEditCreditCard(
                 )
             OutlinedTextField(
                 value = cardNumber,
-                visualTransformation = PersianDigitsTransformation,
+                visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                 onValueChange = {
 
                     try {
@@ -306,7 +311,7 @@ fun AddOrEditCreditCard(
                 shape = RoundedCornerShape(16.dp),
                 label = {
                     Text(
-                        "شماره کارت",
+                        localized("شماره کارت"),
                         style = TextStyle(
                             fontSize = 14.sp,
                             fontFamily = ariaFaNumFontFamily
@@ -330,28 +335,28 @@ fun AddOrEditCreditCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = AppSpacing.Large),
-                text = "ذخیره"
+                text = localized("ذخیره")
             ) {
                 bankNameErr = resetErr()
                 cardNumberErr = resetErr()
                 bankAccountNumberErr = resetErr()
 
                 if (bankName.isBlank()) {
-                    bankNameErr = Pair(true, "نام بانک نمیتواند خالی باشد")
+                    bankNameErr = Pair(true, localized("نام بانک نمیتواند خالی باشد"))
                 }
                 if (cardNumber.text.isBlank()) {
-                    cardNumberErr = Pair(true, "شماره کارت نمیتواند خالی باشد")
+                    cardNumberErr = Pair(true, localized("شماره کارت نمیتواند خالی باشد"))
                 }else if (cardNumber.text.replace(" ","").length < 16){
-                    cardNumberErr = Pair(true, "شماره کارت نمیتواند کمتر از 16 رقم باشد")
+                    cardNumberErr = Pair(true, localized("شماره کارت نمیتواند کمتر از 16 رقم باشد"))
                 }
                 if (bankAccountNumber.isBlank()) {
-                    bankAccountNumberErr = Pair(true, "شماره حساب نمیتواند خالی باشد")
+                    bankAccountNumberErr = Pair(true, localized("شماره حساب نمیتواند خالی باشد"))
                 }
                 if (bankNameErr.first || cardNumberErr.first || bankAccountNumberErr.first) {
                     scope.launch {
                         SnackBarController.sendEvent(
                             SnackBarEvent(
-                                "متاسفانه عملیات مورد نظر با خطا مواجه شد! \n لطفا مقادیر خالی را پرکنید. ",
+                                localized("متاسفانه عملیات مورد نظر با خطا مواجه شد! \n لطفا مقادیر خالی را پرکنید. "),
                                 type = MyCustomSnackBarType.ERROR
                             )
                         )

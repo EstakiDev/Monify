@@ -1,7 +1,9 @@
 package dev.estaki.ui_utils.components
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.isSystemInDarkTheme
+import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -42,7 +44,7 @@ fun AddCreditCard(
             modifier = Modifier.alpha(0.5F),
             shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(
-                containerColor = if (isSystemInDarkTheme()) ColorGrayLite else ColorGrayDark
+                containerColor = if (LocalDarkTheme.current) ColorGrayLite else ColorGrayDark
             ),
             onClick = {onClicked.invoke()}
         ) {
@@ -56,12 +58,12 @@ fun AddCreditCard(
                 Image(
                     modifier = modifier.size(65.dp),
                     painter = painterResource(R.drawable.round_add_24),
-                    contentDescription = "افزودن کارت اعتباری",
+                    contentDescription = localized("افزودن کارت اعتباری"),
                     colorFilter = ColorFilter.tint(color = White)
                 )
                 Spacer(modifier.height(12.dp))
                 Text(
-                    text = "افزودن کارت اعتباری",
+                    text = localized("افزودن کارت اعتباری"),
                     color = White,
                     fontSize = 16.sp,
                     fontFamily = ariaFaNumFontFamily,

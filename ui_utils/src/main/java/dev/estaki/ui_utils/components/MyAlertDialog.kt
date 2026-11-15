@@ -1,5 +1,7 @@
 package dev.estaki.ui_utils.components
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -21,10 +23,10 @@ fun MyAlertDialog(
     dialogText: String,
     icon: ImageVector,
     hasDismissBtn: Boolean = true,
-    confirmButtonText: String = "باشه"
+    confirmButtonText: String = localized("باشه")
 ) {
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
         AlertDialog(
             icon = {
                 Icon(icon, contentDescription = "Alert")
@@ -55,7 +57,7 @@ fun MyAlertDialog(
                             onDismissRequest()
                         }
                     ) {
-                        Text("انصراف",style = TextStyle(fontFamily = ariaFaNumFontFamily,fontWeight = FontWeight.SemiBold))
+                        Text(localized("انصراف"),style = TextStyle(fontFamily = ariaFaNumFontFamily,fontWeight = FontWeight.SemiBold))
                     }
                 }
 

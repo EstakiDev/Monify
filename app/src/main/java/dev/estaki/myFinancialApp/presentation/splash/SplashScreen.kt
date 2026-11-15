@@ -48,6 +48,7 @@ import dev.estaki.myFinancialApp.presentation.actions.SplashScreenActions
 import dev.estaki.myFinancialApp.presentation.states.MyTopAppBarState
 import dev.estaki.myFinancialApp.presentation.states.SplashScreenState
 import dev.estaki.ui_utils.components.MyAlertDialog
+import dev.estaki.ui_utils.localized
 import dev.estaki.ui_utils.components.PermissionBottomSheet
 import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.utils.showAppSettings
@@ -181,11 +182,11 @@ fun SplashScreenUi(
                 showDenyPermissions = false
                 mustGetPermissions = true
             },
-            "هشدار",
-            "متاسفانه شما دسترسی های اجباری مورد نیاز مانیفای رو تایید نکردید، لطفا دسترسی ها را تایید کنید.",
+            localized("هشدار"),
+            localized("متاسفانه شما دسترسی های اجباری مورد نیاز مانیفای رو تایید نکردید، لطفا دسترسی ها را تایید کنید."),
             icon = Icons.Rounded.Warning,
             hasDismissBtn = false,
-            confirmButtonText = "بزن بریم"
+            confirmButtonText = localized("بزن بریم")
         )
     }
 
@@ -199,11 +200,11 @@ fun SplashScreenUi(
                 mustGetPermissions = false
                 showManyFailedAttemptPermissions = false
             },
-            "هشدار",
-            "متاسفانه بدلیل تلاش بیش از حد برای دریافت دسترسی ها، دریافت به صورت مستقیم امان پذیر نیست، لطفا با زدن دکنه زیر به تنظیمات اپلیکیشن رفته و از آن قسمت دسترسی های مورد نیاز اپ را تایید کنید.",
+            localized("هشدار"),
+            localized("متاسفانه بدلیل تلاش بیش از حد برای دریافت دسترسی ها، دریافت به صورت مستقیم امان پذیر نیست، لطفا با زدن دکنه زیر به تنظیمات اپلیکیشن رفته و از آن قسمت دسترسی های مورد نیاز اپ را تایید کنید."),
             icon = Icons.Rounded.Warning,
             hasDismissBtn = false,
-            confirmButtonText = "بزن بریم"
+            confirmButtonText = localized("بزن بریم")
         )
     }
 
@@ -242,13 +243,13 @@ private fun MonifyBrandIntro(modifier: Modifier = Modifier) {
             modifier = Modifier.size(160.dp)
         )
         Text(
-            text = "مانیفای",
+            text = localized("مانیفای"),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            text = "یک نگاه روشن به دخل و خرجت",
+            text = localized("یک نگاه روشن به دخل و خرجت"),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center

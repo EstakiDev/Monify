@@ -1,5 +1,7 @@
 package dev.estaki.ui_utils.components
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -74,13 +76,13 @@ fun CreditCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "کارت اعتباری",
+                        text = localized("کارت اعتباری"),
                         color = Color(0xFFB7B39F),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = item?.bankName ?: "نام بانک",
+                        text = item?.bankName ?: localized("نام بانک"),
                         color = Color(0xFFB7B39F),
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Black
@@ -214,13 +216,13 @@ fun CreditCard(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = "کارت اعتباری",
+                        text = localized("کارت اعتباری"),
                         color = Color(0xFFB7B39F),
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = bankName ?: "نام بانک",
+                        text = bankName ?: localized("نام بانک"),
                         color = Color(0xFFB7B39F),
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Black
@@ -290,7 +292,7 @@ fun CreditCard(
                             Row {
                                 Text(
                                     textAlign = TextAlign.Center,
-                                    text = " موجودی: ",
+                                    text = localized(" موجودی: "),
                                     fontSize = 13.sp,
                                     fontFamily = FontFamily(fonts = listOf(Font(resId = R.font.far_bank))),
                                     color = Color(0xFFB7B39F)

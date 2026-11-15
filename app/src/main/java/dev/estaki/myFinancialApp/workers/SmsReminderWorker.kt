@@ -1,5 +1,7 @@
 package dev.estaki.myFinancialApp.workers
 
+import dev.estaki.ui_utils.localized
+
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -10,8 +12,8 @@ class SmsReminderWorker(context: Context, workerParams: WorkerParameters) :
     override fun doWork(): Result {
         NotificationHandler.showSmsNotification(
             applicationContext,
-            title = "یادآوری تراکنش بانکی",
-            message = "اگر تراکنشی انجام داده‌اید، جزئیات آن را در برنامه بررسی کنید."
+            title = localized("یادآوری تراکنش بانکی"),
+            message = localized("اگر تراکنشی انجام داده‌اید، جزئیات آن را در برنامه بررسی کنید.")
         )
         return Result.success()
     }

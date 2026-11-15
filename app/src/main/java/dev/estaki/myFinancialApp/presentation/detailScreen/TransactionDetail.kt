@@ -1,9 +1,11 @@
 package dev.estaki.myFinancialApp.presentation.detailScreen
 
+import dev.estaki.ui_utils.localized
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.isSystemInDarkTheme
+import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -83,7 +85,10 @@ import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.resetErr
 import dev.estaki.kt_pure_utils.toAmountOrNull
-import dev.estaki.kt_pure_utils.toPersianDigits
+import dev.estaki.ui_utils.localizedDigits
+import dev.estaki.ui_utils.AppAppearance
+import dev.estaki.ui_utils.AppLanguage
+import androidx.compose.ui.text.input.VisualTransformation
 import dev.estaki.myFinancialApp.presentation.actions.AddCreditCardActions
 import dev.estaki.myFinancialApp.presentation.actions.TransactionDetailScreenActions
 import dev.estaki.myFinancialApp.presentation.main.MyCardItem
@@ -133,15 +138,15 @@ fun TransactionDetail(
                 showWarningDialog =false
                 navController?.navigateUp()
             },
-            "هشدار",
-            "از حذف کردن این تراکنش بانکی اطمینان دارید؟",
+            localized("هشدار"),
+            localized("از حذف کردن این تراکنش بانکی اطمینان دارید؟"),
             icon = Icons.Rounded.Warning
         )
     }
     DisposableEffect(true) {
         onComposing(
             MyTopAppBarState(
-                title = if (smsId != 0L) "ویرایش اطلاعات تراکنش" else "افزودن تراکنش جدید",
+                title = if (smsId != 0L) localized("ویرایش اطلاعات تراکنش") else localized("افزودن تراکنش جدید"),
                 navigationIcon = {
                     IconButton(onClick = {
                         navController?.navigateUp()
@@ -193,7 +198,7 @@ fun TransactionDetailUi(
     navController: NavHostController? = null
 ) {
 
-    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+    CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
 
         val scrollState = rememberScrollState()
         var selectedTransactionType by remember { mutableStateOf(TransactionType.DEPOSIT) }
@@ -263,7 +268,7 @@ fun TransactionDetailUi(
             MutableInteractionSource()
         }
         val segmentedButtonList = mapOf<TransactionType, String>(
-            TransactionType.DEPOSIT to "دخل", TransactionType.WITHDRAW to "خرج"
+            TransactionType.DEPOSIT to localized("دخل"), TransactionType.WITHDRAW to localized("خرج")
         )
 
 
@@ -327,7 +332,7 @@ fun TransactionDetailUi(
                         AmountTextField(
                             amount = amount,
                             modifier = Modifier.fillMaxWidth(),
-                            unit = "ريال",
+                            unit = localized("ريال"),
                             isError = amountErr.first,
                             supportingText = if (amountErr.first) {
                                 { Text(text = amountErr.second) }
@@ -340,13 +345,13 @@ fun TransactionDetailUi(
                         }
                         OutlinedTextField(
                             value = bankName,
-                            visualTransformation = PersianDigitsTransformation,
+                            visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                             onValueChange = {
                                 bankName = it
                             },
                             label = {
                                 Text(
-                                    "نام بانک", style = TextStyle(
+                                    localized("نام بانک"), style = TextStyle(
                                         fontSize = 14.sp, fontFamily = ariaFaNumFontFamily
                                     ), fontWeight = FontWeight.Medium
                                 )
@@ -373,7 +378,7 @@ fun TransactionDetailUi(
 
                         OutlinedTextField(
                             modifier = Modifier.weight(1f),
-                            visualTransformation = PersianDigitsTransformation,
+                            visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                             interactionSource = dateInteractionSource,
                             value = date,
                             onValueChange = {
@@ -384,7 +389,7 @@ fun TransactionDetailUi(
                             shape = RoundedCornerShape(16.dp),
                             label = {
                                 Text(
-                                    text = "تاریخ", style = TextStyle(
+                                    text = localized("تاریخ"), style = TextStyle(
                                         fontSize = 14.sp, fontFamily = ariaFaNumFontFamily
                                     ), fontWeight = FontWeight.Medium
                                 )
@@ -408,7 +413,7 @@ fun TransactionDetailUi(
 
                         OutlinedTextField(
                             value = time,
-                            visualTransformation = PersianDigitsTransformation,
+                            visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                             onValueChange = {
                                 time = it
                             },
@@ -418,7 +423,7 @@ fun TransactionDetailUi(
                             interactionSource = timeInteractionSource,
                             label = {
                                 Text(
-                                    "ساعت", style = TextStyle(
+                                    localized("ساعت"), style = TextStyle(
                                         fontSize = 14.sp, fontFamily = ariaFaNumFontFamily
                                     ), fontWeight = FontWeight.Medium
                                 )
@@ -518,7 +523,7 @@ fun TransactionDetailUi(
                 }
                 Column(modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.Large)) {
                     Text(
-                        text = "انتخاب حساب",
+                        text = localized("انتخاب حساب"),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = AppSpacing.Small)
@@ -539,14 +544,14 @@ fun TransactionDetailUi(
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        text = if (bankAccountNumber.isBlank()) "انتخاب کنید" else bankName.toPersianDigits(),
+                                        text = if (bankAccountNumber.isBlank()) localized("انتخاب کنید") else bankName.localizedDigits(),
                                         style = MaterialTheme.typography.titleSmall,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
                                     )
                                     if (bankAccountNumber.isNotBlank()) {
                                         Text(
-                                            text = bankAccountNumber.toPersianDigits(),
+                                            text = bankAccountNumber.localizedDigits(),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             maxLines = 1,
@@ -566,7 +571,7 @@ fun TransactionDetailUi(
                         ) {
                             if (menuItemData.isEmpty()) {
                                 Text(
-                                    text = "حسابی برای انتخاب وجود ندارد",
+                                    text = localized("حسابی برای انتخاب وجود ندارد"),
                                     modifier = Modifier.padding(AppSpacing.Large),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -578,13 +583,13 @@ fun TransactionDetailUi(
                                     text = {
                                         Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
                                             Text(
-                                                text = bankCard.bankName.toPersianDigits(),
+                                                text = bankCard.bankName.localizedDigits(),
                                                 style = MaterialTheme.typography.titleSmall,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis
                                             )
                                             Text(
-                                                text = bankCard.bankAccountNumber.toPersianDigits(),
+                                                text = bankCard.bankAccountNumber.localizedDigits(),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 maxLines = 1,
@@ -600,7 +605,7 @@ fun TransactionDetailUi(
                                         ) {
                                             Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
                                                 Text(
-                                                    text = bankCard.bankName.trim().firstOrNull()?.toString()?.toPersianDigits() ?: "؟",
+                                                    text = bankCard.bankName.trim().firstOrNull()?.toString()?.localizedDigits() ?: localized("؟"),
                                                     style = MaterialTheme.typography.titleSmall,
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                                 )
@@ -608,7 +613,7 @@ fun TransactionDetailUi(
                                         }
                                     },
                                     trailingIcon = if (isSelected) {
-                                        { Icon(Icons.Default.Check, contentDescription = "حساب انتخاب‌شده", tint = MaterialTheme.colorScheme.primary) }
+                                        { Icon(Icons.Default.Check, contentDescription = localized("حساب انتخاب‌شده"), tint = MaterialTheme.colorScheme.primary) }
                                     } else null,
                                     onClick = {
                                         bankAccountNumber = bankCard.bankAccountNumber
@@ -632,7 +637,7 @@ fun TransactionDetailUi(
                 }
 
                 OutlinedTextField(
-                    visualTransformation = PersianDigitsTransformation,
+                    visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                     modifier = Modifier
                         .padding(AppSpacing.Large)
                         .fillMaxWidth()
@@ -647,7 +652,7 @@ fun TransactionDetailUi(
                         Text(
                             fontFamily = ariaFaNumFontFamily,
                             fontWeight = FontWeight.Normal,
-                            text = "توضیحات تراکنشت رو اینجا وارد کن...",
+                            text = localized("توضیحات تراکنشت رو اینجا وارد کن..."),
                             fontSize = 14.sp
                         )
                     },
@@ -655,7 +660,7 @@ fun TransactionDetailUi(
                         Text(
                             fontFamily = ariaFaNumFontFamily,
                             fontWeight = FontWeight.Medium,
-                            text = "توضیحات",
+                            text = localized("توضیحات"),
                             fontSize = 14.sp,
                         )
                     },
@@ -667,7 +672,7 @@ fun TransactionDetailUi(
                 Spacer(Modifier.size(8.dp))
 
                 Text(
-                    text = "دسته بندی",
+                    text = localized("دسته بندی"),
                     modifier = Modifier.padding(start = AppSpacing.Large, bottom = AppSpacing.Small),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -720,7 +725,7 @@ fun TransactionDetailUi(
                                             .padding(horizontal = 8.dp),
                                         fontFamily = ariaFaNumFontFamily,
                                         fontWeight = FontWeight.SemiBold,
-                                        text = item.title,
+                                        text = localized(item.title),
                                         textAlign = TextAlign.Center,
                                         style = TextStyle(fontSize = 13.sp),
                                     )
@@ -742,7 +747,7 @@ fun TransactionDetailUi(
                     .fillMaxWidth()
                     .padding(AppSpacing.Large)
                     .align(Alignment.BottomCenter)
-                    .alpha(if (state.isLoading) 0f else 1f), text = "ذخیره"
+                    .alpha(if (state.isLoading) 0f else 1f), text = localized("ذخیره")
             ) {
 
                 bankNameErr = resetErr()
@@ -752,25 +757,25 @@ fun TransactionDetailUi(
                 timeErr = resetErr()
 
                 if (bankName.isBlank()) {
-                    bankNameErr = Pair(true, "نام بانک نمیتواند خالی باشد")
+                    bankNameErr = Pair(true, localized("نام بانک نمیتواند خالی باشد"))
                 }
                 if (amount.text.isBlank()) {
-                    amountErr = Pair(true, "مبلغ نمیتواند خالی باشد")
+                    amountErr = Pair(true, localized("مبلغ نمیتواند خالی باشد"))
                 }
                 if (bankAccountNumber.isBlank()) {
-                    bankAccountNumberErr = Pair(true, "شماره حساب نمیتواند خالی باشد")
+                    bankAccountNumberErr = Pair(true, localized("شماره حساب نمیتواند خالی باشد"))
                 }
                 if (date.isBlank()) {
-                    dateErr = Pair(true, "تاریخ نمیتواند خالی باشد")
+                    dateErr = Pair(true, localized("تاریخ نمیتواند خالی باشد"))
                 }
                 if (time.isBlank()) {
-                    timeErr = Pair(true, "ساعت تراکنش نمیتواند خالی باشد")
+                    timeErr = Pair(true, localized("ساعت تراکنش نمیتواند خالی باشد"))
                 }
                 if (amountErr.first || bankNameErr.first || dateErr.first || timeErr.first || bankAccountNumberErr.first) {
                     coroutine.launch {
                         SnackBarController.sendEvent(
                             SnackBarEvent(
-                                "متاسفانه عملیات مورد نظر با خطا مواجه شد! \n لطفا مقادیر خالی را پرکنید. ",
+                                localized("متاسفانه عملیات مورد نظر با خطا مواجه شد! \n لطفا مقادیر خالی را پرکنید. "),
                                 type = MyCustomSnackBarType.ERROR
                             )
                         )
@@ -808,7 +813,7 @@ fun TransactionDetailUi(
                     .align(Alignment.Center)
                     .padding(0.dp, 32.dp)
                     .alpha(if (state.isLoading) 1f else 0f),
-                color = if (isSystemInDarkTheme()) ColorTextGrayOnDarkTheme else ColorTextGrayOnLiteTheme,
+                color = if (LocalDarkTheme.current) ColorTextGrayOnDarkTheme else ColorTextGrayOnLiteTheme,
                 animationDuration = 800,
                 animationDelay = 200,
                 startDelay = 0,
