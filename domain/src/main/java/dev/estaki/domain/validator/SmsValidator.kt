@@ -19,6 +19,7 @@ object SmsValidator {
             "جایزه|قرعه کشی|تبریک|تخفیف|تبلیغ|" +
             "(?:برداشت|واریز|کسر|پرداخت).{0,100}خواهد (?:شد|گردید)|" +
             "در غیر این صورت.{0,100}(?:کسر|برداشت)|پرداخت (?:گردد|کنید|نمایید|شود)|جهت پرداخت|" +
+            "رسید خرید اینترنتی|رسید پرداخت اینترنتی|internet purchase receipt|" +
             "one.time password|verification code|\\botp\\b|login code|failed|unsuccessful|declined|cancelled|canceled",
         RegexOption.IGNORE_CASE
     )
