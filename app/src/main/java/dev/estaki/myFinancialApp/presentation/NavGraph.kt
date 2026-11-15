@@ -1,11 +1,20 @@
 package dev.estaki.myFinancialApp.presentation
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,9 +35,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -106,11 +120,11 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = {
-                    if (isMainScreen) {
-                        MonifyTopBarTitle()
-                    } else {
+            if (isMainScreen) {
+                MonifyHomeHeader()
+            } else {
+                TopAppBar(
+                    title = {
                         Text(
                             text = topAppbarState.title,
                             fontFamily = ariaFaNumFontFamily,
@@ -118,12 +132,12 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
                             fontSize = 15.sp,
                             modifier = Modifier.padding(12.dp)
                         )
-                    }
-                },
-                navigationIcon = topAppbarState.navigationIcon,
-                actions = topAppbarState.actions,
-                scrollBehavior = topAppbarState.scrollBehavior
-            )
+                    },
+                    navigationIcon = topAppbarState.navigationIcon,
+                    actions = topAppbarState.actions,
+                    scrollBehavior = topAppbarState.scrollBehavior
+                )
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -187,28 +201,68 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
 }
 
 @Composable
-private fun MonifyTopBarTitle() {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+@OptIn(ExperimentalMaterial3Api::class)
+private fun MonifyHomeHeader() {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .windowInsetsPadding(TopAppBarDefaults.windowInsets)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Image(
-            painter = painterResource(R.drawable.monify_mark),
-            contentDescription = null,
-            modifier = Modifier.size(48.dp)
-        )
-        Column {
-            Text(
-                text = "مانیفای",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface
+        val showWordmark = maxWidth >= 340.dp
+        val shape = RoundedCornerShape(20.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape)
+                .background(Brush.horizontalGradient(listOf(Color(0xFF1A3041), Color(0xFF345667))))
+                .border(1.dp, Color.White.copy(alpha = 0.12f), shape)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Image(
+                painter = painterResource(R.drawable.monify_mark),
+                contentDescription = null,
+                modifier = Modifier.size(52.dp)
             )
-            Text(
-                text = "همراه دخل و خرج تو",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "مانیفای",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFFF8FAF8),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "حساب‌ها و تراکنش‌ها، یک‌جا",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFFD3E0E4),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            if (showWordmark) {
+                Column(
+                    modifier = Modifier.clearAndSetSemantics {},
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Text(
+                        text = "MONIFY",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp,
+                        color = Color(0xFFD3E0E4)
+                    )
+                    Box(
+                        modifier = Modifier.width(24.dp).height(2.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color(0xFFF8C577))
+                    )
+                }
+            }
         }
     }
 }
