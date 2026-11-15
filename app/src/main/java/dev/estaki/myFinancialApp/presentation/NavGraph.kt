@@ -49,7 +49,7 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
     var topAppbarState by remember {
         mutableStateOf(
             MyTopAppBarState(
-                title = "مدیریت اتوماتیک دخل و خرج",
+                title = "مانیفای",
                 scrollBehavior = scrollBehavior
             )
         )

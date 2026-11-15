@@ -16,42 +16,55 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import dev.estaki.ui_utils.ui.theme.DarkGray
-import dev.estaki.ui_utils.ui.theme.DarkYellow
-import dev.estaki.ui_utils.ui.theme.Pink40
-import dev.estaki.ui_utils.ui.theme.PurpleGrey40
 import dev.estaki.ui_utils.ui.theme.TypographyDark
 import dev.estaki.ui_utils.ui.theme.TypographyLite
 import dev.estaki.ui_utils.ui.theme.White
 
 private val DarkColorScheme = darkColorScheme(
-    primary = DarkYellow,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    primaryContainer = Pink40,
-//     Other default colors to override
-//    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = White,
-    onSurface = Color.White,
+    primary = Color(0xFFFFCA73),
+    onPrimary = Color(0xFF402B00),
+    primaryContainer = Color(0xFF594000),
+    onPrimaryContainer = Color(0xFFFFDEAA),
+    secondary = Color(0xFFAACAD8),
+    onSecondary = Color(0xFF163541),
+    secondaryContainer = Color(0xFF2E4B58),
+    onSecondaryContainer = Color(0xFFC6E7F5),
+    background = Color(0xFF101820),
+    onBackground = Color(0xFFE1E5E8),
+    surface = Color(0xFF101820),
+    onSurface = Color(0xFFE1E5E8),
+    surfaceVariant = Color(0xFF40484C),
+    onSurfaceVariant = Color(0xFFC0C8CB),
+    surfaceContainerLowest = Color(0xFF0B1219),
+    surfaceContainerLow = Color(0xFF182128),
+    surfaceContainer = Color(0xFF1C252C),
+    surfaceContainerHigh = Color(0xFF263038),
+    surfaceContainerHighest = Color(0xFF313B43),
     inverseSurface = DarkGray,
     inverseOnSurface = White
 
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = DarkYellow,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    primaryContainer = Pink40,
-//     Other default colors to override
-//    surface = Color(0xFFFFFBFE),
+    primary = Color(0xFF805600),
     onPrimary = Color.White,
+    primaryContainer = Color(0xFFFFDEAA),
+    onPrimaryContainer = Color(0xFF291800),
+    secondary = Color(0xFF46636F),
     onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = DarkGray,
-    onSurface = DarkGray,
+    secondaryContainer = Color(0xFFC6E7F5),
+    onSecondaryContainer = Color(0xFF001F29),
+    background = Color(0xFFFAF9F6),
+    onBackground = Color(0xFF1A2023),
+    surface = Color(0xFFFAF9F6),
+    onSurface = Color(0xFF1A2023),
+    surfaceVariant = Color(0xFFDEE3E5),
+    onSurfaceVariant = Color(0xFF40484C),
+    surfaceContainerLowest = Color.White,
+    surfaceContainerLow = Color(0xFFF3F4F2),
+    surfaceContainer = Color(0xFFEDEEEC),
+    surfaceContainerHigh = Color(0xFFE7E9E7),
+    surfaceContainerHighest = Color(0xFFE1E4E2),
     inverseSurface = White,
     inverseOnSurface = DarkGray
 )

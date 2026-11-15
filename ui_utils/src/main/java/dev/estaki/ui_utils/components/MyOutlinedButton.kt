@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.estaki.ui_utils.ui.theme.DarkYellow
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
 
 @Composable
@@ -24,10 +23,10 @@ fun MyOutlinedButton(
     text: String,
     shape: RoundedCornerShape = RoundedCornerShape(20),
     colors: ButtonColors = ButtonDefaults.outlinedButtonColors(
-        contentColor = DarkYellow,
+        contentColor = MaterialTheme.colorScheme.primary,
         containerColor = MaterialTheme.colorScheme.background
     ),
-    border: BorderStroke = BorderStroke(2.dp, DarkYellow),
+    border: BorderStroke = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
     onBtnClicked: () -> Unit
 ) {
     OutlinedButton(
@@ -44,9 +43,8 @@ fun MyOutlinedButton(
             modifier = Modifier.padding(vertical = 6.dp),
             text = text,
             fontFamily = ariaFaNumFontFamily,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.Black,
-            color = DarkYellow
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }

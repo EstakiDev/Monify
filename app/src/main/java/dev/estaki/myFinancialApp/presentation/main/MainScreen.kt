@@ -97,7 +97,7 @@ fun MainScreen(
                     Timber.i("Composable is visible")
                     onComposing(
                         MyTopAppBarState(
-                            title = "مدیریت اتوماتیک دخل و خرج",
+                            title = "مانیفای",
                         )
                     )
 
