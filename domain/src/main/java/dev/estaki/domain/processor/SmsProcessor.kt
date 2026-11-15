@@ -23,7 +23,9 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
         val account = (accountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1)
             ?: englishAccountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1))?.ifBlank { "-" } ?: "-"
         val time = timeRegex.find(body)?.value ?: "-"
-        val bankName = raw.senderName.takeIf { it.any(Char::isLetter) } ?: body.lineSequence().firstOrNull().orEmpty()
+        val bankName = raw.senderName.takeIf { it.any(Char::isLetter) }
+            ?: raw.description.lineSequence().firstOrNull()?.trim()?.takeIf { it.length <= 60 }
+            ?: raw.senderName
         val epoch = raw.receiveDateTime.toLongOrNull() ?: 0L
 
         return SmsModel(
