@@ -65,8 +65,8 @@ class DataModule {
 
     @Provides
     @Singleton
-    fun provideBankAccountLocalDataSource(bankAccountDao: BankAccountDao): BankAccountDataSource.Local {
-        return BankAccountLocalDataSourceImpl(bankAccountDao)
+    fun provideBankAccountLocalDataSource(bankAccountDao: BankAccountDao, smsDao: SmsDao): BankAccountDataSource.Local {
+        return BankAccountLocalDataSourceImpl(bankAccountDao, smsDao)
     }
 
 

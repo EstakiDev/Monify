@@ -130,13 +130,15 @@ class SplashScreenViewModel @Inject constructor(
                 val mutableListOfNewBankAccount = listOfNewBankAccount.toMutableList()
 
                 val newList = mutableListOfNewBankAccount.map { new ->
-                    val cardNumber = mutableListOfOldBankAccount.find { item ->
+                    val existing = mutableListOfOldBankAccount.find { item ->
                         item.bankAccountNumber == new.bankAccountNumber
-                    }?.bankCardNumber
-                    new.copy(
-                        bankCardNumber = cardNumber,
-                        isItFromSms = true
-                    )
+                    }
+                    if (existing != null && (existing.isItFromSms != true ||
+                            (!existing.bankCardNumber.isNullOrBlank() && existing.bankCardNumber != "null"))) {
+                        existing
+                    } else {
+                        new.copy(bankCardNumber = existing?.bankCardNumber, isItFromSms = true)
+                    }
                 }
 
                 Timber.tag("TAG").d("getAllBankAccountNumberFromTbSms: done ")

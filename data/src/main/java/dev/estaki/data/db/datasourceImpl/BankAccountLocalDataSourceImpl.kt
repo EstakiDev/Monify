@@ -1,9 +1,12 @@
 package dev.estaki.data.db.datasourceImpl
 
 import dev.estaki.data.db.dao.BankAccountDao
+import dev.estaki.data.db.dao.SmsDao
 import dev.estaki.data.mapper.toDbEntity
 import dev.estaki.data.mapper.toDomainModel
 import dev.estaki.domain.models.BankCardModel
+import dev.estaki.domain.models.SmsRawModel
+import dev.estaki.domain.validator.SmsValidator
 import dev.estaki.domain.repo.datasource.BankAccountDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -11,12 +14,23 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 
-class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao) :
+class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao, private val smsDao: SmsDao) :
     BankAccountDataSource.Local {
     override suspend fun readAll(): Flow<List<BankCardModel>> =
-        flow { emit(
-            bankAccountDao.readAll().map { it.toDomainModel() }
-        ) }.flowOn(Dispatchers.IO)
+        flow {
+            val supportedAccounts = smsDao.readAll().asSequence()
+                .filter { sms -> sms.isModified || SmsValidator.isBankSms(SmsRawModel(
+                    sms.id?.toString().orEmpty(), sms.smsSender, sms.smsBody,
+                    sms.transactionDate, sms.transactionDateTime.toString()
+                )) }
+                .map { it.bankAccountNumber }
+                .filter { account -> account.count(Char::isDigit) >= 4 }
+                .toSet()
+            emit(bankAccountDao.readAll().map { it.toDomainModel() }.filter { card ->
+                card.isItFromSms != true || (!card.bankCardNumber.isNullOrBlank() && card.bankCardNumber != "null") ||
+                    card.bankAccountNumber in supportedAccounts
+            })
+        }.flowOn(Dispatchers.IO)
 
     override suspend fun read(id: Long): Flow<BankCardModel> =
         flow { emit(bankAccountDao.read(id).toDomainModel()) }.flowOn(Dispatchers.IO)

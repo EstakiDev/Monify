@@ -6,6 +6,7 @@ import dev.estaki.data.mapper.toDomainModel
 import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.SmsRawModel
+import dev.estaki.domain.processor.SmsProcessor
 import dev.estaki.domain.validator.SmsValidator
 import dev.estaki.domain.repo.datasource.SmsDataSource
 import kotlinx.coroutines.Dispatchers
@@ -66,10 +67,20 @@ class SmsLocalDatasourceImpl(
 
     override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> =
         flow {
-            emit(smsDao.readAllBankAccountNumber().map { account ->
+            val accounts = smsDao.readAll()
+                .mapNotNull { it.toDomainModel().withCurrentClassification() }
+                .filter { account -> account.bankAccountNumber.count(Char::isDigit) >= 4 }
+                .groupBy { it.bankAccountNumber }
+                .values
+                .map { messages -> messages.maxBy { it.transactionDateTime } }
+            emit(accounts.map { account ->
+                val parsed = SmsProcessor(listOf(SmsRawModel(
+                    account.id?.toString().orEmpty(), account.smsSender, account.smsBody,
+                    account.transactionDate, account.transactionDateTime.toString()
+                ))).execute().firstOrNull()
                 BankCardModel(
                     id = account.bankAccountNumber.hashCode(),
-                    bankName = account.bankName,
+                    bankName = parsed?.bankName ?: account.bankName,
                     bankAccountNumber = account.bankAccountNumber,
                     bankCardBalance = account.bankCardBalance,
                     bankCardNumber = null,
