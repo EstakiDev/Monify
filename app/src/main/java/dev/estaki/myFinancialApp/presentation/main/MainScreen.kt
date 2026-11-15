@@ -68,6 +68,7 @@ import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
 import dev.estaki.ui_utils.components.AddCreditCard
 import dev.estaki.ui_utils.components.CreditCard
+import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.utils.isScrollingUp
@@ -271,7 +272,7 @@ fun MainScreenUi(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                                .padding(horizontal = AppSpacing.Large, vertical = AppSpacing.Small)
                                 .alpha(if (state.smsList.isNotEmpty()) 1F else 0F)
                         ) {
                             Text(
@@ -293,12 +294,12 @@ fun MainScreenUi(
                                 .fillMaxSize()
                                 .wrapContentHeight(),
                             contentPadding = PaddingValues(
-                                top = 4.dp,
-                                start = 4.dp,
-                                end = 4.dp,
+                                top = AppSpacing.ExtraSmall,
+                                start = AppSpacing.Large,
+                                end = AppSpacing.Large,
                                 bottom = 150.dp
                             ),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacing.Small),
                             state = lazyColumnState
                         ) {
 
@@ -329,7 +330,7 @@ fun MainScreenUi(
         FloatingActionButton(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(12.dp),
+                .padding(AppSpacing.Large),
             onClick = {
                 scope.launch {
                     if (state.listBankAccountNumber.isEmpty()) {
@@ -359,10 +360,10 @@ fun MainScreenUi(
 
 @Composable
 private fun TransactionSummary(income: String, expense: String, hasUnparsedAmounts: Boolean) {
-    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.Large, vertical = AppSpacing.ExtraSmall)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)
         ) {
             SummaryAmount("مجموع واریز", income, Modifier.weight(1f), isIncome = true)
             SummaryAmount("مجموع برداشت", expense, Modifier.weight(1f), isIncome = false)
@@ -370,7 +371,7 @@ private fun TransactionSummary(income: String, expense: String, hasUnparsedAmoun
         if (hasUnparsedAmounts) {
             Text(
                 text = "مبلغ بعضی تراکنش‌ها در مجموع محاسبه نشده است.",
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = AppSpacing.ExtraSmall),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -390,7 +391,7 @@ private fun SummaryAmount(title: String, amount: String, modifier: Modifier, isI
         shape = RoundedCornerShape(16.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
     ) {
-        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
+        Column(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
@@ -424,15 +425,15 @@ fun BankCardView(
         Text(
             "حساب های موجود در پیامک ها",
             modifier = Modifier
-                .padding(start = 22.dp, top = 22.dp, bottom = 12.dp),
+                .padding(start = AppSpacing.Large, top = AppSpacing.ExtraLarge, bottom = AppSpacing.Medium),
             fontSize = 14.sp,
             fontWeight = FontWeight.Black
         )
-        Surface(modifier = Modifier.padding(bottom = 8.dp)) {
+        Surface(modifier = Modifier.padding(bottom = AppSpacing.Small)) {
             HorizontalPager(
                 state = pagerState,
-                contentPadding = PaddingValues(horizontal = 22.dp),
-                pageSpacing = 8.dp,
+                contentPadding = PaddingValues(horizontal = AppSpacing.Large),
+                pageSpacing = AppSpacing.Small,
             ) { page ->
 
                 Surface(
@@ -480,7 +481,7 @@ fun BankCardView(
             Modifier
                 .wrapContentHeight()
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(bottom = AppSpacing.Small),
             horizontalArrangement = Arrangement.Center
         ) {
             repeat(pagerState.pageCount) { iteration ->

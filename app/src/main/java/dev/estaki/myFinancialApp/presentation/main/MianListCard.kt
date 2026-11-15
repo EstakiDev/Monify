@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.formatAmountForDisplay
+import dev.estaki.ui_utils.ui.theme.AppSpacing
 
 @Composable
 fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
@@ -48,8 +49,8 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 14.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(

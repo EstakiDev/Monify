@@ -15,8 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
 
 
@@ -38,13 +38,13 @@ fun PermissionBottomSheet(
 
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
+                    .padding(AppSpacing.Large)
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    modifier = Modifier.padding(horizontal = 12.dp),
+                    modifier = Modifier.padding(horizontal = AppSpacing.Small),
                     text = "سلام رفیق\n اپلیکیشن برای این که بتونه پیامک تراکنش های بانکی تو رو بهت نشون بده نیاز داره که تو این دسترسی رو تایید کنی.",
                     fontFamily = ariaFaNumFontFamily,
                     fontSize = 15.sp,
@@ -53,7 +53,7 @@ fun PermissionBottomSheet(
                 )
 
                 MyOutlinedButton(
-                    modifier = modifier.padding(vertical = 20.dp),
+                    modifier = modifier.padding(vertical = AppSpacing.ExtraLarge),
                     text = "تایید دسترسی"
                 ) {
                     onBtnGetPermissionClicked.invoke()

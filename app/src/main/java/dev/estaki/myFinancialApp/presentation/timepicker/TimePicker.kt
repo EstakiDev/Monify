@@ -18,8 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import dev.estaki.ui_utils.ui.theme.AppSpacing
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,9 +42,9 @@ fun MyTimePicker(
     }) {
         Card(modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)) {
+            .padding(AppSpacing.Medium)) {
             Column(verticalArrangement = Arrangement.SpaceBetween) {
-                Spacer(modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.size(AppSpacing.ExtraLarge))
 
                 TimePicker(
                     modifier = Modifier.fillMaxWidth(),
@@ -53,7 +53,7 @@ fun MyTimePicker(
 
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacing.Small, vertical = AppSpacing.ExtraSmall),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     TextButton(onClick = onDismiss) {

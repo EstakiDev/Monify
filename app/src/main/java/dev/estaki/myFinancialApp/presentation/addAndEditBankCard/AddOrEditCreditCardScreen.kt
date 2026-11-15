@@ -1,6 +1,8 @@
 package dev.estaki.myFinancialApp.presentation.addAndEditBankCard
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,6 +54,7 @@ import dev.estaki.ui_utils.SnackBarEvent
 import dev.estaki.ui_utils.components.CreditCard
 import dev.estaki.ui_utils.components.MyAlertDialog
 import dev.estaki.ui_utils.components.MyOutlinedButton
+import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.ui.theme.RedDark
@@ -194,8 +197,9 @@ fun AddOrEditCreditCard(
 
         Column(
             Modifier
+                .verticalScroll(rememberScrollState())
                 .padding(
-                    horizontal = 8.dp
+                    horizontal = AppSpacing.Large
                 ),
         ) {
             CreditCard(
@@ -231,7 +235,7 @@ fun AddOrEditCreditCard(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = AppSpacing.Small),
                 textStyle = TextStyle(
                     fontSize = 17.sp,
                     fontFamily = ariaFaNumFontFamily,
@@ -263,7 +267,7 @@ fun AddOrEditCreditCard(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = AppSpacing.Small),
                 textStyle = TextStyle(
                     fontSize = 17.sp,
                     fontFamily = ariaFaNumFontFamily,
@@ -305,7 +309,7 @@ fun AddOrEditCreditCard(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = AppSpacing.Small),
                 textStyle = TextStyle(
                     fontSize = 17.sp,
                     fontFamily = ariaFaNumFontFamily,
@@ -317,7 +321,7 @@ fun AddOrEditCreditCard(
             MyOutlinedButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(vertical = AppSpacing.Large),
                 text = "ذخیره"
             ) {
                 bankNameErr = resetErr()

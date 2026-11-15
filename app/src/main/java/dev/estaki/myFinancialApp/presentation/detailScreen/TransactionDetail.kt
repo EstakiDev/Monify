@@ -95,6 +95,7 @@ import dev.estaki.ui_utils.SnackBarEvent
 import dev.estaki.ui_utils.components.AmountTextField
 import dev.estaki.ui_utils.components.MyAlertDialog
 import dev.estaki.ui_utils.components.MyOutlinedButton
+import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.ui.theme.DarkYellow
@@ -317,7 +318,7 @@ fun TransactionDetailUi(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp)
+                        .padding(AppSpacing.Large)
                 ) {
                     MyCardItem(smsModel = newSmsModel) { }
 
@@ -504,7 +505,7 @@ fun TransactionDetailUi(
                 SingleChoiceSegmentedButtonRow(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp)
+                        .padding(horizontal = AppSpacing.Large, vertical = AppSpacing.Medium)
                 ) {
                     segmentedButtonList.forEach { item ->
                         SegmentedButton(selected = selectedTransactionType == item.key, onClick = {
@@ -527,14 +528,14 @@ fun TransactionDetailUi(
                     }
                 }
                 Text(
-                    text = "انتخاب حساب:", Modifier.padding(start = 12.dp),
+                    text = "انتخاب حساب:", Modifier.padding(start = AppSpacing.Large),
                     fontFamily = ariaFaNumFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                 )
                 Surface(
                     modifier = Modifier
-                        .padding(horizontal = 8.dp)
+                        .padding(horizontal = AppSpacing.Large)
                         .wrapContentWidth()
                         .height(45.dp)
                         .clip(RoundedCornerShape(10.dp))
@@ -597,7 +598,7 @@ fun TransactionDetailUi(
 
                 TextField(
                     modifier = Modifier
-                        .padding(12.dp)
+                        .padding(AppSpacing.Large)
                         .fillMaxSize()
                         .height(200.dp),
                     textStyle = TextStyle(
@@ -630,7 +631,7 @@ fun TransactionDetailUi(
                 Spacer(Modifier.size(8.dp))
 
                 Text(
-                    text = "دسته بندی:", Modifier.padding(start = 12.dp),
+                    text = "دسته بندی:", Modifier.padding(start = AppSpacing.Large),
                     fontFamily = ariaFaNumFontFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
@@ -640,8 +641,8 @@ fun TransactionDetailUi(
                     Modifier
                         .fillMaxHeight(0.6F)
                         .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+                    contentPadding = PaddingValues(horizontal = AppSpacing.Large),
                 ) {
 
                     items(localCategoryList, key = {
@@ -703,7 +704,7 @@ fun TransactionDetailUi(
             MyOutlinedButton(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(AppSpacing.Large)
                     .align(Alignment.BottomCenter)
                     .alpha(if (state.isLoading) 0f else 1f), text = "ذخیره"
             ) {
