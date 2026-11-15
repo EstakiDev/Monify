@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.estaki.domain.models.BankCardModel
+import dev.estaki.kt_pure_utils.formatAmountForDisplay
 import dev.estaki.ui_utils.R
 import dev.estaki.ui_utils.ui.theme.CreditColors
 import dev.estaki.ui_utils.ui.theme.LiteWhite
@@ -141,7 +142,7 @@ fun CreditCard(
 
                             Text(
                                 textAlign = TextAlign.Center,
-                                text = "${item?.bankCardBalance}",
+                                text = item?.bankCardBalance?.formatAmountForDisplay(persianDigits = false).orEmpty(),
                                 fontSize = 13.sp,
                                 fontFamily = FontFamily(fonts = listOf(Font(resId = R.font.ocr_a))),
                                 color = Color(0xFFB7B39F)
@@ -297,7 +298,7 @@ fun CreditCard(
                                 )
                                 Text(
                                     textAlign = TextAlign.Center,
-                                    text = bankCardBalance ?: "",
+                                    text = bankCardBalance.formatAmountForDisplay(persianDigits = false),
                                     fontSize = 13.sp,
                                     fontFamily = FontFamily(fonts = listOf(Font(resId = R.font.ocr_a))),
                                     color = Color(0xFFB7B39F)

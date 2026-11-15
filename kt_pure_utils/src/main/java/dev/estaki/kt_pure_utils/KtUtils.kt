@@ -1,5 +1,30 @@
 package dev.estaki.kt_pure_utils
 
+import java.math.BigInteger
+
+fun String.toAmountOrNull(): BigInteger? {
+    val normalized = trim().removeSuffix("ریال").removeSuffix("ريال").trim()
+        .arabicToDecimal()
+    if (!normalized.matches(Regex("[+-]?(?:[0-9]+|[0-9]{1,3}(?:[,،٬][0-9]{3})+)"))) return null
+    return normalized.replace(",", "").replace("،", "").replace("٬", "").toBigIntegerOrNull()
+}
+
+fun String.formatAmountForDisplay(persianDigits: Boolean = true): String {
+    if (toAmountOrNull() == null) return this
+    val normalized = trim().removeSuffix("ریال").removeSuffix("ريال").trim()
+        .arabicToDecimal().replace(",", "").replace("،", "").replace("٬", "")
+    val sign = normalized.takeWhile { it == '-' || it == '+' }
+    val groups = normalized.removePrefix(sign).reversed().chunked(3).joinToString(",").reversed()
+    if (!persianDigits) return sign + groups
+    return (sign + groups).map { character ->
+        when (character) {
+            in '0'..'9' -> '۰' + (character - '0')
+            ',' -> '٬'
+            else -> character
+        }
+    }.joinToString("")
+}
+
 fun String.removeSpecialChar(): String =
     if (this.contains("*"))
         this.filter { it != '*' }

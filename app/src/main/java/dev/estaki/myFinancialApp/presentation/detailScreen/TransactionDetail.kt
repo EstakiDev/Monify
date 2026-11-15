@@ -82,6 +82,7 @@ import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.resetErr
+import dev.estaki.kt_pure_utils.toAmountOrNull
 import dev.estaki.myFinancialApp.presentation.actions.AddCreditCardActions
 import dev.estaki.myFinancialApp.presentation.actions.TransactionDetailScreenActions
 import dev.estaki.myFinancialApp.presentation.main.MyCardItem
@@ -240,8 +241,8 @@ fun TransactionDetailUi(
         var amount by remember {
             mutableStateOf(
                 TextFieldValue(
-                    state.smsModel?.transactionAmount ?: "",
-                    selection = TextRange(state.smsModel?.transactionAmount?.length ?: 0)
+                    state.smsModel?.transactionAmount?.toAmountOrNull()?.toString() ?: "",
+                    selection = TextRange(state.smsModel?.transactionAmount?.toAmountOrNull()?.toString()?.length ?: 0)
                 )
             )
         }
@@ -290,7 +291,8 @@ fun TransactionDetailUi(
 
         LaunchedEffect(key1 = state.smsModel) {
             state.smsModel?.let {
-                amount = TextFieldValue(it.transactionAmount)
+                val normalizedAmount = it.transactionAmount.toAmountOrNull()?.toString() ?: it.transactionAmount
+                amount = TextFieldValue(normalizedAmount, selection = TextRange(normalizedAmount.length))
                 bankName = it.bankName
                 time = it.transactionTime
                 date = it.transactionDate
@@ -466,7 +468,7 @@ fun TransactionDetailUi(
                                 date = "${it.year}/${it.month}/${it.day}"
                             },
                             fontFamily = FontFamily(
-                                Font(R.font.aria_bold)
+                                Font(R.font.vazirmatn_bold)
                             ),
                             fontSize = 17.sp,
                         )
@@ -482,7 +484,7 @@ fun TransactionDetailUi(
                                 date = "${it.year}/${it.month}/${it.day}"
                             },
                             fontFamily = FontFamily(
-                                Font(R.font.aria_bold)
+                                Font(R.font.vazirmatn_bold)
                             ),
                             fontSize = 17.sp,
                         )
