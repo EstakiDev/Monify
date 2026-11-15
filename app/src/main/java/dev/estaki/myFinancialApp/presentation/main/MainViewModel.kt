@@ -15,7 +15,7 @@ import dev.estaki.myFinancialApp.presentation.actions.MainScreenActions
 import dev.estaki.myFinancialApp.presentation.states.MainScreenState
 import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -36,6 +36,8 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val _mainScreenState = MutableStateFlow<MainScreenState>(MainScreenState())
     val mainScreenState = _mainScreenState.asStateFlow()
+    private var smsLoadJob: Job? = null
+    private var cardsLoadJob: Job? = null
 
     init {
         getAllCategory()
@@ -47,7 +49,9 @@ class MainViewModel @Inject constructor(
     fun onAction(action: MainScreenActions) {
         when (action) {
             is MainScreenActions.LoadCardsFromDb -> {
-                viewModelScope.launch {
+                cardsLoadJob?.cancel()
+                _mainScreenState.update { it.copy(isLoadingCards = true, isError = false) }
+                cardsLoadJob = viewModelScope.launch {
                     getAllBankCardFromTbBankCard.invoke().catch {
                         it.printStackTrace()
                         SnackBarController.sendEvent(
@@ -56,10 +60,19 @@ class MainViewModel @Inject constructor(
                                 type = MyCustomSnackBarType.ERROR
                             )
                         )
+                        _mainScreenState.update { state ->
+                            state.copy(isLoadingCards = false, isLoading = false, isError = true, errorMessage = it.message)
+                        }
                     }.collect {
+                        if (it.isEmpty()) smsLoadJob?.cancel()
                         _mainScreenState.update { state ->
                             state.copy(
-                                listBankAccountNumber = it
+                                listBankAccountNumber = it,
+                                isLoadingCards = false,
+                                hasLoadedCards = true,
+                                isLoading = if (it.isEmpty()) false else state.isLoading,
+                                smsList = if (it.isEmpty()) emptyList() else state.smsList,
+                                isError = false
                             )}
                     }
                 }
@@ -67,24 +80,21 @@ class MainViewModel @Inject constructor(
 
             is MainScreenActions.OpenSms -> Unit
             is MainScreenActions.ReloadSmsByScrollCards -> {
-                if(action.bankAccountNumber != _mainScreenState.value.currentBankAccountNumber)
-                    _mainScreenState.update { state -> state.copy(isLoading = true)}
                 getAllSmsByBankAccountNumber(action.bankAccountNumber)
             }
         }
     }
 
-    fun prepareDataForEditOrCreateCard(){
-        viewModelScope.launch {
-            _mainScreenState.update { state ->
-                state.copy(
-                    isLoading = true,
-                    listBankAccountNumber = emptyList()
-                )}
-        }
-    }
     private fun getAllSmsByBankAccountNumber(bankAccountNumber: String) {
-        viewModelScope.launch {
+        smsLoadJob?.cancel()
+        if (bankAccountNumber.isBlank()) {
+            _mainScreenState.update { it.copy(smsList = emptyList(), currentBankAccountNumber = "", isLoading = false) }
+            return
+        }
+        _mainScreenState.update { state ->
+            state.copy(isLoading = state.currentBankAccountNumber != bankAccountNumber || state.smsList.isEmpty(), isError = false)
+        }
+        smsLoadJob = viewModelScope.launch {
             getAllSmsByBankAccountNumberUseCase.invoke(bankAccountNumber).catch{
                 it.printStackTrace()
                 SnackBarController.sendEvent(
@@ -103,7 +113,6 @@ class MainViewModel @Inject constructor(
                 }
                 it.printStackTrace()
             }.collect { smsList ->
-                delay(200)
                 _mainScreenState.update { state ->
                     state.copy(
                         isLoading = false,

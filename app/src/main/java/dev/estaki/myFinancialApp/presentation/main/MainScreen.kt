@@ -34,7 +34,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -84,6 +83,7 @@ fun MainScreen(
 ) {
     val state by viewModel.mainScreenState.collectAsState()
     val lifecycleOwner = LocalLifecycleOwner.current
+    var cardsRefreshStarted by remember { mutableStateOf(false) }
 
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -124,16 +124,15 @@ fun MainScreen(
         }
     }
 
-    DisposableEffect(Unit, navController) {
+    LaunchedEffect(viewModel) {
         viewModel.onAction(MainScreenActions.LoadCardsFromDb)
-        onDispose {
-            viewModel.prepareDataForEditOrCreateCard()
-        }
+        cardsRefreshStarted = true
     }
 
     MainScreenUi(
         modifier = Modifier.fillMaxSize(),
         state = state,
+        cardsRefreshStarted = cardsRefreshStarted,
         navController = navController,
         onActions = viewModel::onAction
     )
@@ -146,7 +145,7 @@ fun MainScreenUi(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     state: MainScreenState,
-    viewModel: MainViewModel = hiltViewModel(),
+    cardsRefreshStarted: Boolean,
     onActions: (MainScreenActions) -> Unit
 ) {
     var firstInit by remember { mutableStateOf(true) }
@@ -155,25 +154,30 @@ fun MainScreenUi(
         initialPage = 0,
         initialPageOffsetFraction = 0F,
         pageCount = { state.listBankAccountNumber.size + 1 })
-    var cardPosition by remember { mutableIntStateOf(0) }
     val scope = rememberCoroutineScope()
     val isScrollingUp = lazyColumnState.isScrollingUp().value
     LaunchedEffect(
+        state.hasLoadedCards,
+        cardsRefreshStarted,
+        state.isLoadingCards,
         state.listBankAccountNumber,
-        state.smsList,
-        state.isLoading,
-        state.currentBankAccountNumber
+        state.isError
     ) {
-//        if (state.listBankAccountNumber.isNotEmpty()) {
-//            onActions.invoke(MainScreenActions.ReloadSmsByScrollCards(state.listBankAccountNumber[cardPosition].bankAccountNumber))
-//        } else
-        if (state.listBankAccountNumber.isEmpty() && state.smsList.isEmpty() && state.isLoading.not()) {
+        if (cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError && state.listBankAccountNumber.isEmpty()) {
             SnackBarController.sendEvent(
                 event = SnackBarEvent(
-                    message = "متاسفانه هیچ تراکنش بانکی ار درون پیامک های شما یافت نشد! \n شما میتوانید به صورت دستی کارت اعتباری و تراکنش جدید تعریف کنید. ",
+                    message = "حساب بانکی‌ای برای نمایش پیدا نشد. می‌توانید کارت و تراکنش را به‌صورت دستی اضافه کنید.",
                     type = MyCustomSnackBarType.ERROR
                 )
             )
+        }
+    }
+    LaunchedEffect(pagerState, cardsRefreshStarted, state.hasLoadedCards, state.isLoadingCards, state.listBankAccountNumber) {
+        if (cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && state.listBankAccountNumber.isNotEmpty()) {
+            snapshotFlow { pagerState.settledPage }.collect { page ->
+                val accountNumber = state.listBankAccountNumber.getOrNull(page)?.bankAccountNumber.orEmpty()
+                onActions(MainScreenActions.ReloadSmsByScrollCards(accountNumber))
+            }
         }
     }
     Box(Modifier.fillMaxSize()) {
@@ -211,15 +215,9 @@ fun MainScreenUi(
                                 }
                             }
                         }
-                    ) { bankAccountNumber, page ->
-                        cardPosition = page
-                        onActions.invoke(MainScreenActions.ReloadSmsByScrollCards(bankAccountNumber))
-                    }
-                    scope.launch {
-                        pagerState.animateScrollToPage(cardPosition)
-                    }
+                    )
                 }
-            } else {
+            } else if (cardsRefreshStarted && state.hasLoadedCards && !state.isLoadingCards && !state.isError) {
                 BankCardView(
                     modifier = modifier,
                     listOfBankAccountNumber = emptyList(),
@@ -242,14 +240,11 @@ fun MainScreenUi(
                                 }
                             }
                         }
-                    },
-                    onScroll = { bankAccountNumber, position ->
-                        onActions.invoke(MainScreenActions.ReloadSmsByScrollCards(bankAccountNumber))
                     }
                 )
             }
 
-            if (state.isLoading) {
+            if (state.isLoading || ((!cardsRefreshStarted || state.isLoadingCards) && state.listBankAccountNumber.isEmpty())) {
                 Box(modifier.fillMaxSize()) {
                     BallPulseProgressIndicator(
                         modifier = Modifier
@@ -302,7 +297,10 @@ fun MainScreenUi(
                             state = lazyColumnState
                         ) {
 
-                            items(state.smsList.size) { itemIndex ->
+                            items(
+                                count = state.smsList.size,
+                                key = { index -> state.smsList[index].id ?: "transaction-$index" }
+                            ) { itemIndex ->
                                 MyCardItem(
                                     state.smsList[itemIndex],
                                     onCardClick = { navController.navigate("AddDetailScreen/${state.smsList[itemIndex].id}") })
@@ -361,18 +359,7 @@ fun BankCardView(
     listOfBankAccountNumber: List<BankCardModel>,
     pagerState: PagerState,
     onItemClicked: (bankAccountNumber: String, position: Int, isEditMode: Boolean) -> Unit,
-    onScroll: (bankAccountNumber: String, position: Int) -> Unit,
 ) {
-
-
-    LaunchedEffect(pagerState) {
-        snapshotFlow { pagerState.currentPage }.collect { page ->
-            onScroll.invoke(
-                if (pagerState.currentPage < listOfBankAccountNumber.size) listOfBankAccountNumber[pagerState.currentPage].bankAccountNumber else "",
-                page
-            )
-        }
-    }
 
     Column {
         Text(

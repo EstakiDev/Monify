@@ -6,7 +6,9 @@ import dev.estaki.domain.models.SmsModel
 data class MainScreenState(
     val smsList:List<SmsModel> = emptyList(),
     val listBankAccountNumber:List<BankCardModel> = emptyList(),
-    var currentBankAccountNumber: String = "",
+    val currentBankAccountNumber: String = "",
+    val isLoadingCards: Boolean = true,
+    val hasLoadedCards: Boolean = false,
     val isLoading: Boolean = true,
     val isError: Boolean = false,
     val errorMessage: String? = null
