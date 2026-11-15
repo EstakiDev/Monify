@@ -1,6 +1,8 @@
 package dev.estaki.ui_utils.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,12 +39,14 @@ import dev.estaki.ui_utils.R
 import dev.estaki.ui_utils.ui.theme.CreditColors
 import dev.estaki.ui_utils.ui.theme.LiteWhite
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CreditCard(
     modifier: Modifier = Modifier
         .wrapContentSize(),
     item: BankCardModel?,
     position: Int = 0,
+    onLongClick: (() -> Unit)? = null,
     onClicked: () -> Unit
 ) {
     val backgroundColor = if (position >= CreditColors.size) {
@@ -51,14 +55,11 @@ fun CreditCard(
         CreditColors[position]
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Card(
-            modifier = modifier,
+            modifier = modifier.combinedClickable(onClick = onClicked, onLongClick = onLongClick),
             shape = RoundedCornerShape(22.dp),
             colors = CardDefaults.cardColors(
                 containerColor = backgroundColor
-            ),
-            onClick = {
-                onClicked.invoke()
-            }
+            )
         ) {
             Column(
                 modifier = modifier,

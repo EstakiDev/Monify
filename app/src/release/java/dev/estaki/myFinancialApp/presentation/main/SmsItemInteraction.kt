@@ -4,7 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import dev.estaki.domain.models.SmsModel
+import dev.estaki.domain.models.BankCardModel
 
 @Composable
 internal fun smsItemInteraction(smsModel: SmsModel, onClick: () -> Unit): Modifier =
     Modifier.clickable(onClick = onClick)
+
+@Composable
+internal fun bankCardReportAction(card: BankCardModel): (() -> Unit)? = null

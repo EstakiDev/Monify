@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import dev.estaki.domain.models.SmsModel
+import dev.estaki.domain.models.BankCardModel
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -42,4 +43,29 @@ internal fun smsItemInteraction(smsModel: SmsModel, onClick: () -> Unit): Modifi
             SmsReportWriter.write(context.applicationContext, smsModel)
         }
     })
+}
+
+@Composable
+internal fun bankCardReportAction(card: BankCardModel): (() -> Unit)? {
+    val context = LocalContext.current
+    var pendingCard by remember { mutableStateOf<BankCardModel?>(null) }
+    val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        val pending = pendingCard
+        pendingCard = null
+        if (granted && pending != null) {
+            SmsReportWriter.writeCard(context.applicationContext, pending)
+        } else if (!granted) {
+            Toast.makeText(context, "مجوز ذخیره‌سازی گزارش داده نشد", Toast.LENGTH_LONG).show()
+        }
+    }
+    return {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            pendingCard = card
+            permission.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else {
+            SmsReportWriter.writeCard(context.applicationContext, card)
+        }
+    }
 }

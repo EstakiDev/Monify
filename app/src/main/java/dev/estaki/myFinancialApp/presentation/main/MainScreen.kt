@@ -408,7 +408,7 @@ fun BankCardView(
                                 fraction = 1f - pageOffset.coerceIn(0f, 1f)
                             )
                         }) {
-                    if (pagerState.currentPage == pagerState.pageCount - 1)
+                    if (page == pagerState.pageCount - 1)
                         AddCreditCard {
                             val bankAccountNumber = ""
                             onItemClicked.invoke(bankAccountNumber, page, false)
@@ -416,11 +416,12 @@ fun BankCardView(
                     else
                         if (listOfBankAccountNumber.isNotEmpty()) {
                             CreditCard(
-                                item = listOfBankAccountNumber[pagerState.currentPage],
-                                position = page
+                                item = listOfBankAccountNumber[page],
+                                position = page,
+                                onLongClick = bankCardReportAction(listOfBankAccountNumber[page])
                             ) {
                                 val bankAccountNumber =
-                                    listOfBankAccountNumber[pagerState.currentPage].bankAccountNumber
+                                    listOfBankAccountNumber[page].bankAccountNumber
                                 onItemClicked.invoke(bankAccountNumber, page, true)
 
                             }
