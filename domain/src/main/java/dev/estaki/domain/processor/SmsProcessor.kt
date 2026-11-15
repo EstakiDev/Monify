@@ -2,6 +2,7 @@ package dev.estaki.domain.processor
 
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.SmsRawModel
+import dev.estaki.domain.models.TransactionType
 import dev.estaki.domain.validator.SmsValidator
 import java.nio.ByteBuffer
 import java.security.MessageDigest
@@ -13,10 +14,14 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
     private fun parse(raw: SmsRawModel): SmsModel? {
         val transaction = SmsValidator.classify(raw) ?: return null
         val body = SmsValidator.normalize(raw.description)
+        val accountBody = raw.description.lineSequence().joinToString("\n") { SmsValidator.normalize(it) }
+        val sourceAccountBody = if (transaction.type == TransactionType.WITHDRAW &&
+            outgoingAccountTransfer.containsMatchIn(accountBody)
+        ) accountBody.substringBefore("به کارت") else accountBody
         val balance = (balanceRegex.find(body)?.groupValues?.getOrNull(1)
             ?: englishBalanceRegex.find(body)?.groupValues?.getOrNull(1))?.replace(Regex("[,،٬]"), "") ?: "-"
-        val account = (accountRegex.find(body)?.groupValues?.getOrNull(1)
-            ?: englishAccountRegex.find(body)?.groupValues?.getOrNull(1))?.ifBlank { "-" } ?: "-"
+        val account = (accountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1)
+            ?: englishAccountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1))?.ifBlank { "-" } ?: "-"
         val time = timeRegex.find(body)?.value ?: "-"
         val bankName = raw.senderName.takeIf { it.any(Char::isLetter) } ?: body.lineSequence().firstOrNull().orEmpty()
         val epoch = raw.receiveDateTime.toLongOrNull() ?: 0L
@@ -45,10 +50,11 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
     }
 
     private companion object {
+        val outgoingAccountTransfer = Regex("از حساب.{0,120}به کارت", RegexOption.DOT_MATCHES_ALL)
         val englishBalanceRegex = Regex("balance\\s*[:：]?\\s*([\\d,]+)")
-        val englishAccountRegex = Regex("(?:card|account)\\s*[:：]?\\s*([\\d* -]{4,})")
+        val englishAccountRegex = Regex("(?:card|account)[ \\t]*[:：]?[ \\t]*([\\d* -]{4,})")
         val balanceRegex = Regex("(?:مانده|موجودی)(?:\\s*(?:حساب|:))?\\s*[:：]?\\s*([\\d,،٬]+)")
-        val accountRegex = Regex("(?:کارت|حساب|شماره کارت|شماره حساب)\\s*[:：]?\\s*([\\d*۰-۹٠-٩-]{4,})")
+        val accountRegex = Regex("(?:شماره کارت|شماره حساب|کارت|حساب)[ \\t]*[:：]?[ \\t]*([\\d*×-]{4,}(?: +[\\d*×-]+)*)")
         val timeRegex = Regex("(?<!\\d)(?:[01]?\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d)?(?!\\d)")
     }
 }
