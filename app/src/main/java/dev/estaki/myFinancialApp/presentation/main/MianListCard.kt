@@ -48,10 +48,10 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
+                .wrapContentHeight()
+                .then(smsItemInteraction(smsModel, onCardClick)),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(8.dp),
-            onClick = { onCardClick() }
+            elevation = CardDefaults.cardElevation(8.dp)
 
         ) {
             Box(
