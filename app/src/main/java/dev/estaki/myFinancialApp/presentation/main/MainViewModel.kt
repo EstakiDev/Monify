@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.estaki.domain.error.MyCustomSnackBarType
 import dev.estaki.domain.models.CategoryModel
+import dev.estaki.domain.models.TransactionType
+import dev.estaki.kt_pure_utils.toAmountOrNull
 import dev.estaki.domain.usecases.CacheCategoryToDb
 import dev.estaki.domain.usecases.GetAllBankCardFromTbBankCard
 import dev.estaki.domain.usecases.GetAllCategoryCount
@@ -16,6 +18,8 @@ import dev.estaki.myFinancialApp.presentation.states.MainScreenState
 import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -23,6 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.Date
+import java.math.BigInteger
 import javax.inject.Inject
 
 @HiltViewModel
@@ -88,7 +93,7 @@ class MainViewModel @Inject constructor(
     private fun getAllSmsByBankAccountNumber(bankAccountNumber: String) {
         smsLoadJob?.cancel()
         if (bankAccountNumber.isBlank()) {
-            _mainScreenState.update { it.copy(smsList = emptyList(), currentBankAccountNumber = "", isLoading = false) }
+            _mainScreenState.update { it.copy(smsList = emptyList(), currentBankAccountNumber = "", isLoading = false, incomeTotal = "0", expenseTotal = "0", hasUnparsedAmounts = false) }
             return
         }
         _mainScreenState.update { state ->
@@ -113,10 +118,25 @@ class MainViewModel @Inject constructor(
                 }
                 it.printStackTrace()
             }.collect { smsList ->
+                val totals = withContext(Dispatchers.Default) {
+                    var income = BigInteger.ZERO
+                    var expense = BigInteger.ZERO
+                    var hasUnparsedAmounts = false
+                    smsList.forEach { sms ->
+                        val amount = sms.transactionAmount.toAmountOrNull()?.abs()
+                        if (amount == null) hasUnparsedAmounts = true
+                        else if (sms.transactionType == TransactionType.DEPOSIT) income += amount
+                        else expense += amount
+                    }
+                    Triple(income.toString(), expense.toString(), hasUnparsedAmounts)
+                }
                 _mainScreenState.update { state ->
                     state.copy(
                         isLoading = false,
                         smsList = smsList,
+                        incomeTotal = totals.first,
+                        expenseTotal = totals.second,
+                        hasUnparsedAmounts = totals.third,
                         currentBankAccountNumber = bankAccountNumber
                     )
                 }

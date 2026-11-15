@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,6 +60,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndicator
 import dev.estaki.domain.error.MyCustomSnackBarType
 import dev.estaki.domain.models.BankCardModel
+import dev.estaki.kt_pure_utils.formatAmountForDisplay
 import dev.estaki.myFinancialApp.presentation.actions.MainScreenActions
 import dev.estaki.myFinancialApp.presentation.states.MainScreenState
 import dev.estaki.myFinancialApp.presentation.states.MyTopAppBarState
@@ -262,6 +264,9 @@ fun MainScreenUi(
 
             } else {
                 Column {
+                    if (state.smsList.isNotEmpty()) {
+                        TransactionSummary(state.incomeTotal, state.expenseTotal, state.hasUnparsedAmounts)
+                    }
                     Row {
                         Row(
                             modifier = Modifier
@@ -350,6 +355,60 @@ fun MainScreenUi(
     }
 
 
+}
+
+@Composable
+private fun TransactionSummary(income: String, expense: String, hasUnparsedAmounts: Boolean) {
+    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            SummaryAmount("مجموع واریز", income, Modifier.weight(1f), isIncome = true)
+            SummaryAmount("مجموع برداشت", expense, Modifier.weight(1f), isIncome = false)
+        }
+        if (hasUnparsedAmounts) {
+            Text(
+                text = "مبلغ بعضی تراکنش‌ها در مجموع محاسبه نشده است.",
+                modifier = Modifier.padding(top = 4.dp),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SummaryAmount(title: String, amount: String, modifier: Modifier, isIncome: Boolean) {
+    val accent = if (isIncome) {
+        if (isSystemInDarkTheme()) Color(0xFF70D7B3) else Color(0xFF087858)
+    } else {
+        if (isSystemInDarkTheme()) Color(0xFFFFA7A5) else Color(0xFFB84045)
+    }
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = amount.formatAmountForDisplay(),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = accent
+            )
+            Text(
+                text = "ریال",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 }
 
 

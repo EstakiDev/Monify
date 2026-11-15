@@ -5,6 +5,9 @@ import dev.estaki.domain.models.SmsModel
 
 data class MainScreenState(
     val smsList:List<SmsModel> = emptyList(),
+    val incomeTotal: String = "0",
+    val expenseTotal: String = "0",
+    val hasUnparsedAmounts: Boolean = false,
     val listBankAccountNumber:List<BankCardModel> = emptyList(),
     val currentBankAccountNumber: String = "",
     val isLoadingCards: Boolean = true,
