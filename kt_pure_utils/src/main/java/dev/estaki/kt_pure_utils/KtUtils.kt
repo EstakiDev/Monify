@@ -2,6 +2,14 @@ package dev.estaki.kt_pure_utils
 
 import java.math.BigInteger
 
+fun String.toPersianDigits(): String = map { character ->
+    when (character) {
+        in '0'..'9' -> '۰' + (character - '0')
+        in '٠'..'٩' -> '۰' + (character - '٠')
+        else -> character
+    }
+}.joinToString("")
+
 fun String.toAmountOrNull(): BigInteger? {
     val normalized = trim().removeSuffix("ریال").removeSuffix("ريال").trim()
         .arabicToDecimal()

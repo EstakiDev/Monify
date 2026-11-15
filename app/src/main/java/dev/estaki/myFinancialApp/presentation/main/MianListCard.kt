@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.formatAmountForDisplay
+import dev.estaki.kt_pure_utils.toPersianDigits
 import dev.estaki.ui_utils.ui.theme.AppSpacing
 
 @Composable
@@ -71,7 +72,7 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = smsModel.bankName,
+                        text = smsModel.bankName.toPersianDigits(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
@@ -79,7 +80,7 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
                     )
                     Text(
                         text = listOf(smsModel.transactionDate, smsModel.transactionTime)
-                            .filter { it.isNotBlank() && it != "-" }.joinToString("  ·  "),
+                            .filter { it.isNotBlank() && it != "-" }.joinToString("  ·  ").toPersianDigits(),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

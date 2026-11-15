@@ -80,6 +80,7 @@ import dev.estaki.domain.models.SmsModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.resetErr
 import dev.estaki.kt_pure_utils.toAmountOrNull
+import dev.estaki.kt_pure_utils.toPersianDigits
 import dev.estaki.myFinancialApp.presentation.actions.AddCreditCardActions
 import dev.estaki.myFinancialApp.presentation.actions.TransactionDetailScreenActions
 import dev.estaki.myFinancialApp.presentation.main.MyCardItem
@@ -98,6 +99,7 @@ import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.ui.theme.DarkYellow
 import dev.estaki.ui_utils.ui.theme.LiteRed
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
+import dev.estaki.ui_utils.utils.PersianDigitsTransformation
 import ir.huri.jcal.JalaliCalendar
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -335,6 +337,7 @@ fun TransactionDetailUi(
                         }
                         OutlinedTextField(
                             value = bankName,
+                            visualTransformation = PersianDigitsTransformation,
                             onValueChange = {
                                 bankName = it
                             },
@@ -367,6 +370,7 @@ fun TransactionDetailUi(
 
                         OutlinedTextField(
                             modifier = Modifier.weight(1f),
+                            visualTransformation = PersianDigitsTransformation,
                             interactionSource = dateInteractionSource,
                             value = date,
                             onValueChange = {
@@ -401,6 +405,7 @@ fun TransactionDetailUi(
 
                         OutlinedTextField(
                             value = time,
+                            visualTransformation = PersianDigitsTransformation,
                             onValueChange = {
                                 time = it
                             },
@@ -527,7 +532,7 @@ fun TransactionDetailUi(
                         ) {
                             Icon(Icons.Rounded.ArrowDropDown, contentDescription = "")
                             Text(
-                                text = bankAccountNumber.ifBlank { "انتخاب کنید" },
+                                text = bankAccountNumber.ifBlank { "انتخاب کنید" }.toPersianDigits(),
                                 Modifier.padding(start = AppSpacing.Medium),
                                 fontFamily = ariaFaNumFontFamily,
                                 fontWeight = FontWeight.Medium,
@@ -540,7 +545,7 @@ fun TransactionDetailUi(
                                 menuItemData.forEach { bankCard ->
                                     DropdownMenuItem(text = {
                                         Text(
-                                            "${bankCard.bankName} / ${bankCard.bankAccountNumber}",
+                                            "${bankCard.bankName} / ${bankCard.bankAccountNumber}".toPersianDigits(),
                                             fontFamily = ariaFaNumFontFamily,
                                             fontWeight = FontWeight.Medium,
                                             fontSize = 15.sp,
@@ -566,6 +571,7 @@ fun TransactionDetailUi(
                 }
 
                 OutlinedTextField(
+                    visualTransformation = PersianDigitsTransformation,
                     modifier = Modifier
                         .padding(AppSpacing.Large)
                         .fillMaxWidth()

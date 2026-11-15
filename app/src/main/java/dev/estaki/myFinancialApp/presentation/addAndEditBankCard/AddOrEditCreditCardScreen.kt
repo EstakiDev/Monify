@@ -59,6 +59,7 @@ import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
+import dev.estaki.ui_utils.utils.PersianDigitsTransformation
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -204,8 +205,8 @@ fun AddOrEditCreditCard(
             Box(modifier = Modifier.fillMaxWidth().height(225.dp)) {
                 CreditCard(
                     bankName = bankName,
-                    bankAccountNumber = bankAccountNumber,
-                    bankCardNumber = cardNumber.text,
+                    bankAccountNumber = bankAccountNumber.arabicToDecimal(),
+                    bankCardNumber = cardNumber.text.arabicToDecimal(),
                     bankCardBalance = state.bankCardModel?.bankCardBalance ?: "",
                     position = position
                 ) {}
@@ -215,6 +216,7 @@ fun AddOrEditCreditCard(
 
             OutlinedTextField(
                 value = bankName ?: "",
+                visualTransformation = PersianDigitsTransformation,
                 onValueChange = {
                     bankName = it
                 },
@@ -246,6 +248,7 @@ fun AddOrEditCreditCard(
                 )
             OutlinedTextField(
                 value = bankAccountNumber,
+                visualTransformation = PersianDigitsTransformation,
                 onValueChange = {
                     bankAccountNumber = it
                 },
@@ -280,6 +283,7 @@ fun AddOrEditCreditCard(
                 )
             OutlinedTextField(
                 value = cardNumber,
+                visualTransformation = PersianDigitsTransformation,
                 onValueChange = {
 
                     try {

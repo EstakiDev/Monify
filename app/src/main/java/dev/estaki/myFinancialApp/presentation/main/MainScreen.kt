@@ -61,6 +61,7 @@ import com.ehsanmsz.mszprogressindicator.progressindicator.BallPulseProgressIndi
 import dev.estaki.domain.error.MyCustomSnackBarType
 import dev.estaki.domain.models.BankCardModel
 import dev.estaki.kt_pure_utils.formatAmountForDisplay
+import dev.estaki.kt_pure_utils.toPersianDigits
 import dev.estaki.myFinancialApp.presentation.actions.MainScreenActions
 import dev.estaki.myFinancialApp.presentation.states.MainScreenState
 import dev.estaki.myFinancialApp.presentation.states.MyTopAppBarState
@@ -281,7 +282,7 @@ fun MainScreenUi(
                                 fontSize = 14.sp
                             )
                             Text(
-                                text = "${state.smsList.size} عدد ",
+                                text = "${state.smsList.size} عدد ".toPersianDigits(),
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp
                             )
