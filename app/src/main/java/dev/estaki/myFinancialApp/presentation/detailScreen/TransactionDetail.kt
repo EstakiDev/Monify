@@ -14,24 +14,26 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +67,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.TextUnit
@@ -520,44 +523,102 @@ fun TransactionDetailUi(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = AppSpacing.Small)
                     )
-                    Surface(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(16.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        onClick = { bankCardDropDownExpanded = true }
+                    ExposedDropdownMenuBox(
+                        expanded = bankCardDropDownExpanded,
+                        onExpandedChange = { bankCardDropDownExpanded = it }
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(AppSpacing.Large),
-                            verticalAlignment = Alignment.CenterVertically
+                        Surface(
+                            modifier = Modifier.fillMaxWidth()
+                                .menuAnchor(),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant
                         ) {
-                            Icon(Icons.Rounded.ArrowDropDown, contentDescription = "")
-                            Text(
-                                text = bankAccountNumber.ifBlank { "انتخاب کنید" }.toPersianDigits(),
-                                Modifier.padding(start = AppSpacing.Medium),
-                                fontFamily = ariaFaNumFontFamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp,
-                            )
-                            DropdownMenu(
-                                expanded = bankCardDropDownExpanded,
-                                scrollState = rememberScrollState(),
-                                onDismissRequest = { bankCardDropDownExpanded = false }) {
-                                menuItemData.forEach { bankCard ->
-                                    DropdownMenuItem(text = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(AppSpacing.Large),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = if (bankAccountNumber.isBlank()) "انتخاب کنید" else bankName.toPersianDigits(),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    if (bankAccountNumber.isNotBlank()) {
                                         Text(
-                                            "${bankCard.bankName} / ${bankCard.bankAccountNumber}".toPersianDigits(),
-                                            fontFamily = ariaFaNumFontFamily,
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 15.sp,
+                                            text = bankAccountNumber.toPersianDigits(),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
-                                    }, onClick = {
+                                    }
+                                }
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = bankCardDropDownExpanded)
+                            }
+                        }
+                        ExposedDropdownMenu(
+                            expanded = bankCardDropDownExpanded,
+                            onDismissRequest = { bankCardDropDownExpanded = false },
+                            modifier = Modifier.heightIn(max = 320.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+                        ) {
+                            if (menuItemData.isEmpty()) {
+                                Text(
+                                    text = "حسابی برای انتخاب وجود ندارد",
+                                    modifier = Modifier.padding(AppSpacing.Large),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            menuItemData.forEach { bankCard ->
+                                val isSelected = bankCard.bankAccountNumber == bankAccountNumber
+                                DropdownMenuItem(
+                                    text = {
+                                        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
+                                            Text(
+                                                text = bankCard.bankName.toPersianDigits(),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                            Text(
+                                                text = bankCard.bankAccountNumber.toPersianDigits(),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
+                                            )
+                                        }
+                                    },
+                                    leadingIcon = {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                            else MaterialTheme.colorScheme.surfaceVariant
+                                        ) {
+                                            Box(modifier = Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                                                Text(
+                                                    text = bankCard.bankName.trim().firstOrNull()?.toString()?.toPersianDigits() ?: "؟",
+                                                    style = MaterialTheme.typography.titleSmall,
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            }
+                                        }
+                                    },
+                                    trailingIcon = if (isSelected) {
+                                        { Icon(Icons.Default.Check, contentDescription = "حساب انتخاب‌شده", tint = MaterialTheme.colorScheme.primary) }
+                                    } else null,
+                                    onClick = {
                                         bankAccountNumber = bankCard.bankAccountNumber
                                         bankName = bankCard.bankName
+                                        bankAccountNumberErr = resetErr()
                                         bankCardDropDownExpanded = false
-                                    })
-                                }
+                                    },
+                                    modifier = Modifier.padding(horizontal = AppSpacing.ExtraSmall)
+                                )
                             }
-
                         }
                     }
                     AnimatedVisibility(bankAccountNumberErr.first) {
