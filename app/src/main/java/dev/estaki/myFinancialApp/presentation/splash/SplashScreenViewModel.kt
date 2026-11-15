@@ -94,9 +94,13 @@ class SplashScreenViewModel @Inject constructor(
                 messages
             }
 
-            correctDate(smsList)
-            cacheSmsToDb(SmsProcessor(smsList).execute().toMutableList())
-            cacheBankAccountToDb()
+            withContext(Dispatchers.Default) {
+                val transactions = SmsProcessor(smsList).execute().map { sms ->
+                    sms.copy(transactionDate = sms.transactionDateTime.toString().convertToTime())
+                }
+                cacheSmsToDb(transactions)
+                cacheBankAccountToDb()
+            }
             onAction(SplashScreenActions.MustGoToMainScreen)
         } catch (exception: CancellationException) {
             throw exception
@@ -180,7 +184,7 @@ class SplashScreenViewModel @Inject constructor(
         return result
     }
 
-    private suspend fun cacheSmsToDb(smsList: MutableList<SmsModel>) {
+    private suspend fun cacheSmsToDb(smsList: List<SmsModel>) {
         Timber.tag("TAG").d("parseSmsToModel --;;;")
         val smsListInDb = getSavedSmsInDb()
         val knownMessages = smsListInDb
@@ -203,9 +207,4 @@ class SplashScreenViewModel @Inject constructor(
     private fun SmsModel.fingerprint(): Triple<String, String, Long> =
         Triple(smsSender, smsBody, transactionDateTime)
 
-    fun correctDate(smsL: ArrayList<SmsRawModel>) {
-        smsL.forEach {
-            it.receiveDate = it.receiveDate.convertToTime()
-        }
-    }
 }
