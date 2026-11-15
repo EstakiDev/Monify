@@ -133,8 +133,7 @@ fun AddOrEditCreditCardScreen(
         )
     }
     AddOrEditCreditCard(
-        modifier = modifier
-            .height(225.dp),
+        modifier = modifier,
         onAction = viewModel::onAction,
         state = state,
         navController = navController,
@@ -202,14 +201,15 @@ fun AddOrEditCreditCard(
                     horizontal = AppSpacing.Large
                 ),
         ) {
-            CreditCard(
-                modifier = Modifier,
-                bankName = bankName,
-                bankAccountNumber = bankAccountNumber,
-                bankCardNumber = cardNumber.text,
-                bankCardBalance = state.bankCardModel?.bankCardBalance ?: "",
-                position = position
-            ) {}
+            Box(modifier = Modifier.fillMaxWidth().height(225.dp)) {
+                CreditCard(
+                    bankName = bankName,
+                    bankAccountNumber = bankAccountNumber,
+                    bankCardNumber = cardNumber.text,
+                    bankCardBalance = state.bankCardModel?.bankCardBalance ?: "",
+                    position = position
+                ) {}
+            }
 
 
 
