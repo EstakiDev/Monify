@@ -53,12 +53,16 @@ class SmsLocalDatasourceImpl(
         flow {
             emit(smsDao.readByBankAccountNumber(accountNumber)
                 .map { it.toDomainModel() }
-                .filter { it.isModified || it.isTransactionAlert() })
+                .mapNotNull { it.withCurrentClassification() })
         }.flowOn(Dispatchers.IO)
 
-    private fun SmsModel.isTransactionAlert(): Boolean = SmsValidator.isBankSms(
-        SmsRawModel(id?.toString().orEmpty(), smsSender, smsBody, transactionDate, transactionDateTime.toString())
-    )
+    private fun SmsModel.withCurrentClassification(): SmsModel? {
+        if (isModified) return this
+        val transaction = SmsValidator.classify(
+            SmsRawModel(id?.toString().orEmpty(), smsSender, smsBody, transactionDate, transactionDateTime.toString())
+        ) ?: return null
+        return copy(transactionType = transaction.type, transactionAmount = transaction.amount)
+    }
 
     override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> =
         flow {
