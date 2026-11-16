@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
@@ -72,7 +73,8 @@ fun CreditCard(
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
         Card(
-            modifier = modifier.fillMaxSize().combinedClickable(onClick = onClicked, onLongClick = onLongClick),
+            modifier = modifier.fillMaxSize().clip(RoundedCornerShape(24.dp))
+                .combinedClickable(onClick = onClicked, onLongClick = onLongClick),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = colors.last())
         ) {
