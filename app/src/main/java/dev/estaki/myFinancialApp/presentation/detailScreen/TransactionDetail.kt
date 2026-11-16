@@ -639,6 +639,7 @@ fun TransactionDetailUi(
                     }
                 }
 
+                Spacer(Modifier.height(AppSpacing.Large))
                 CategorySelector(categories = localCategoryList) { selectedId ->
                     localCategoryList = localCategoryList.map { category ->
                         if (category.id == selectedId) category.copy(isChecked = !category.isChecked) else category
