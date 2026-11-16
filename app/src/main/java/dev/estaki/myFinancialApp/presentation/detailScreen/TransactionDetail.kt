@@ -328,7 +328,10 @@ fun TransactionDetailUi(
                         .fillMaxWidth()
                         .padding(AppSpacing.Large)
                 ) {
-                    MyCardItem(smsModel = newSmsModel) { }
+                    MyCardItem(
+                        smsModel = newSmsModel.copy(categoryIds = localCategoryList.filter { it.isChecked }.map { it.id }),
+                        categories = localCategoryList
+                    ) { }
 
                     Spacer(modifier = Modifier.size(AppSpacing.Large))
                     Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium)) {
