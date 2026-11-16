@@ -143,6 +143,7 @@ fun SplashScreenUi(
         PermissionBottomSheet(
             modifier = Modifier,
             modalBottomSheetState,
+            onPrivacyClicked = { navController.navigate("PrivacyPolicy") },
             onBtnGetPermissionClicked = {
                 checkShouldShowRequestPermissionRationale(activity, permissions) {
                     if (it) {

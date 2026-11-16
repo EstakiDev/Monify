@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ fun PermissionBottomSheet(
     modifier: Modifier = Modifier,
     modalBottomSheetState: SheetState,
     onBtnGetPermissionClicked: () -> Unit,
+    onPrivacyClicked: () -> Unit,
     onDismissRequest: () -> Unit
 ) {
     CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
@@ -47,7 +49,7 @@ fun PermissionBottomSheet(
             ) {
                 Text(
                     modifier = Modifier.padding(horizontal = AppSpacing.Small),
-                    text = localized("سلام رفیق\n اپلیکیشن برای این که بتونه پیامک تراکنش های بانکی تو رو بهت نشون بده نیاز داره که تو این دسترسی رو تایید کنی."),
+                    text = localized("مانیفای با اجازه شما پیامک‌های موجود و جدید را روی دستگاه بررسی می‌کند تا تراکنش‌های بانکی را نمایش دهد. پیامک‌های شناسایی‌شده در دستگاه ذخیره می‌شوند. برای آگاهی از نحوه پردازش داده و گزارش خطا، حریم خصوصی را بخوانید."),
                     fontFamily = ariaFaNumFontFamily,
                     fontSize = 15.sp,
                     lineHeight = 25.sp,
@@ -59,6 +61,9 @@ fun PermissionBottomSheet(
                     text = localized("تایید دسترسی")
                 ) {
                     onBtnGetPermissionClicked.invoke()
+                }
+                TextButton(onClick = onPrivacyClicked) {
+                    Text(localized("حریم خصوصی و سیاست‌ها"))
                 }
 
             }

@@ -57,6 +57,8 @@ fun String.localizedDigits(): String = if (AppAppearance.language == AppLanguage
 private val englishTranslations = mapOf(
     "مانیفای" to "Monify",
     "حساب‌ها و تراکنش‌ها، یک‌جا" to "Accounts and transactions, together",
+    "حریم خصوصی و سیاست‌ها" to "Privacy policy",
+    "مانیفای با اجازه شما پیامک‌های موجود و جدید را روی دستگاه بررسی می‌کند تا تراکنش‌های بانکی را نمایش دهد. پیامک‌های شناسایی‌شده در دستگاه ذخیره می‌شوند. برای آگاهی از نحوه پردازش داده و گزارش خطا، حریم خصوصی را بخوانید." to "With your permission, Monify checks existing and incoming SMS on this device to show bank transactions. Recognized messages are stored on your device. Read the privacy policy to learn about data processing and crash reports.",
     "یک نگاه روشن به دخل و خرجت" to "A clearer view of your money",
     "بزن بریم" to "Continue",
     "متاسفانه شما دسترسی های اجباری مورد نیاز مانیفای رو تایید نکردید، لطفا دسترسی ها را تایید کنید." to "Please allow the permissions Monify needs to work.",

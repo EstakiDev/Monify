@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,14 +47,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import dev.estaki.monify.R
 import dev.estaki.ui_utils.AppAppearance
 import dev.estaki.ui_utils.AppLanguage
 import dev.estaki.ui_utils.ThemeMode
 
 @Composable
-internal fun AppearanceSettings(onDismiss: () -> Unit) {
+internal fun AppearanceSettings(onDismiss: () -> Unit, onPrivacyClick: () -> Unit) {
     val persian = AppAppearance.language == AppLanguage.PERSIAN
+    val context = LocalContext.current
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -115,9 +122,42 @@ internal fun AppearanceSettings(onDismiss: () -> Unit) {
                             onClick = { AppAppearance.selectThemeMode(ThemeMode.DARK) }
                         )
                     }
+                    SettingsLink(
+                        title = if (persian) "اعلان‌ها" else "Notifications",
+                        subtitle = if (persian) "مدیریت اجازه نمایش اعلان" else "Manage notification permission",
+                        onClick = {
+                            val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                            } else {
+                                Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.fromParts("package", context.packageName, null))
+                            }
+                            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }
+                    )
+                    SettingsLink(
+                        title = if (persian) "حریم خصوصی و سیاست‌ها" else "Privacy policy",
+                        subtitle = if (persian) "داده‌های شما چگونه استفاده می‌شوند" else "How your data is used",
+                        onClick = onPrivacyClick
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsLink(title: String, subtitle: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .clickable(onClick = onClick).heightIn(min = 60.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary)
     }
 }
 

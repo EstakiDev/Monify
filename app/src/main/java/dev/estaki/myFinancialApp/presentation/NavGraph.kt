@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -83,6 +84,7 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
     val splashState by splashViewModel.splashScreenState.collectAsState()
     val currentBackStackEntry by navController.currentBackStackEntryAsState()
     val isMainScreen = currentBackStackEntry?.destination?.route == "MainScreen"
+    val isPrivacyScreen = currentBackStackEntry?.destination?.route == "PrivacyPolicy"
 
     var topAppbarState by remember {
         mutableStateOf(
@@ -128,7 +130,16 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if (isMainScreen) {
-                MonifyHomeHeader()
+                MonifyHomeHeader(onPrivacyClick = { navController.navigate("PrivacyPolicy") })
+            } else if (isPrivacyScreen) {
+                TopAppBar(
+                    title = { Text(if (AppAppearance.language == AppLanguage.PERSIAN) "حریم خصوصی" else "Privacy policy") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.navigateUp() }) {
+                            Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = if (AppAppearance.language == AppLanguage.PERSIAN) "بازگشت" else "Back")
+                        }
+                    }
+                )
             } else {
                 TopAppBar(
                     title = {
@@ -165,6 +176,9 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
                 MainScreen(navController, isSyncing = splashState.isSyncing) {
                     topAppbarState = it
                 }
+            }
+            composable(route = "PrivacyPolicy") {
+                PrivacyPolicyScreen()
             }
             composable(
                 route = "AddDetailScreen/{smsId}", arguments = listOf(
@@ -208,9 +222,15 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
 }
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun MonifyHomeHeader() {
+private fun MonifyHomeHeader(onPrivacyClick: () -> Unit) {
     var showSettings by remember { mutableStateOf(false) }
-    if (showSettings) AppearanceSettings(onDismiss = { showSettings = false })
+    if (showSettings) AppearanceSettings(
+        onDismiss = { showSettings = false },
+        onPrivacyClick = {
+            showSettings = false
+            onPrivacyClick()
+        }
+    )
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
