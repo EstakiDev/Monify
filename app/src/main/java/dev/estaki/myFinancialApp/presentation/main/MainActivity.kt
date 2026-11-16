@@ -2,6 +2,7 @@ package dev.estaki.myFinancialApp.presentation.main
 
 import android.os.Bundle
 import android.content.res.Configuration
+import android.view.ContextThemeWrapper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +41,11 @@ class MainActivity : ComponentActivity() {
             val configuration = remember(systemConfiguration, locale) {
                 Configuration(systemConfiguration).apply { setLocale(locale) }
             }
-            val localizedContext = remember(configuration) { createConfigurationContext(configuration) }
+            val localizedContext = remember(configuration) {
+                ContextThemeWrapper(this@MainActivity, this@MainActivity.theme).apply {
+                    applyOverrideConfiguration(configuration)
+                }
+            }
             CompositionLocalProvider(
                 LocalLayoutDirection provides direction,
                 LocalConfiguration provides configuration,
