@@ -17,15 +17,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.TextButton
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -52,7 +45,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -76,7 +68,6 @@ import dev.estaki.myFinancialApp.presentation.states.MyTopAppBarState
 import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.AppAppearance
 import dev.estaki.ui_utils.AppLanguage
-import dev.estaki.ui_utils.ThemeMode
 import dev.estaki.ui_utils.localized
 import dev.estaki.ui_utils.SnackBarEvent
 import dev.estaki.ui_utils.components.MyCustomSnackBar
@@ -215,7 +206,6 @@ fun Nav(modifier: Modifier = Modifier, navController: NavHostController) {
         }
     }
 }
-
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun MonifyHomeHeader() {
@@ -285,37 +275,5 @@ private fun MonifyHomeHeader() {
                 Icon(Icons.Rounded.Settings, contentDescription = if (AppAppearance.language == AppLanguage.PERSIAN) "تنظیمات" else "Settings", tint = Color.White)
             }
         }
-    }
-}
-
-@Composable
-private fun AppearanceSettings(onDismiss: () -> Unit) {
-    val persian = AppAppearance.language == AppLanguage.PERSIAN
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(if (persian) "تنظیمات" else "Settings") },
-        text = {
-            Column(modifier = Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState())) {
-                Text(if (persian) "زبان" else "Language", style = MaterialTheme.typography.titleSmall)
-                SettingsOption("فارسی", AppAppearance.language == AppLanguage.PERSIAN) { AppAppearance.selectLanguage(AppLanguage.PERSIAN) }
-                SettingsOption("English", AppAppearance.language == AppLanguage.ENGLISH) { AppAppearance.selectLanguage(AppLanguage.ENGLISH) }
-                Text(if (persian) "ظاهر" else "Appearance", style = MaterialTheme.typography.titleSmall)
-                SettingsOption(if (persian) "مطابق دستگاه" else "System default", AppAppearance.themeMode == ThemeMode.SYSTEM) { AppAppearance.selectThemeMode(ThemeMode.SYSTEM) }
-                SettingsOption(if (persian) "روشن" else "Light", AppAppearance.themeMode == ThemeMode.LIGHT) { AppAppearance.selectThemeMode(ThemeMode.LIGHT) }
-                SettingsOption(if (persian) "تاریک" else "Dark", AppAppearance.themeMode == ThemeMode.DARK) { AppAppearance.selectThemeMode(ThemeMode.DARK) }
-            }
-        },
-        confirmButton = { TextButton(onClick = onDismiss) { Text(if (persian) "بستن" else "Close") } }
-    )
-}
-
-@Composable
-private fun SettingsOption(label: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(selected = selected, onClick = null)
-        Text(label, modifier = Modifier.padding(horizontal = 8.dp))
     }
 }
