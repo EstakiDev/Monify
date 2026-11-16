@@ -36,7 +36,7 @@ interface SmsDao {
     @Query("SELECT COUNT(*) FROM tb_sms")
     fun getCount(): Long
 
-    @Query("SELECT * FROM tb_sms WHERE bankAccountNumber=:bankAccountNumber AND isRemoved = 0 ORDER BY transactionDateTime DESC")
+    @Query("SELECT * FROM tb_sms WHERE (bankAccountNumber=:bankAccountNumber OR bankAccountNumber IN ('', '-')) AND isRemoved = 0 ORDER BY transactionDateTime DESC")
     fun readByBankAccountNumber(bankAccountNumber: String): Flow<List<SmsEntity>>
 
     @Query("""

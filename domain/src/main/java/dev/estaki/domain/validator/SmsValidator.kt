@@ -26,6 +26,7 @@ object SmsValidator {
     private val labeledAmount = Regex("(?:مبلغ(?:\\s*تراکنش)?|amount)\\s*[:：]?\\s*($NUMBER)(?![0-9]|[,،٬][0-9]|[/:٫])", RegexOption.IGNORE_CASE)
     private val directionAmount = Regex("(?:واریز|برداشت|خرید|پرداخت|کسر|deposit|withdrawal|purchase|payment)\\s*(?:مبلغ)?\\s*[:：]?\\s*([+-]?)\\s*($NUMBER)(?![0-9]|[,،٬][0-9]|[/:٫])", RegexOption.IGNORE_CASE)
     private val signedAmount = Regex("(?<![0-9])([+-])\\s*($NUMBER)(?![0-9,،٬])")
+    private val compactStatement = Regex("^([0-9]{12,26})\\s+($NUMBER)\\s*([+-])\\s+[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}\\s*-\\s*(?:[01]?[0-9]|2[0-3]):[0-5][0-9]\\s+.*?(?:مانده|موجودی)\\s*[:：]")
     private val outgoingTransfer = Regex("از حساب.{0,120}به (?:کارت|حساب).{0,160}واریز", RegexOption.IGNORE_CASE)
 
     fun isBankSms(smsRawModel: SmsRawModel): Boolean = classify(smsRawModel) != null
@@ -33,6 +34,13 @@ object SmsValidator {
     fun classify(sms: SmsRawModel): Transaction? {
         val body = normalize(sms.description)
         if (body.isBlank() || excluded.containsMatchIn(body) || !accountEvidence.containsMatchIn(body)) return null
+
+        compactStatement.find(body)?.let { match ->
+            val amount = match.groupValues[2].filter(Char::isDigit)
+            if (amount.all { it == '0' }) return null
+            val type = if (match.groupValues[3] == "-") TransactionType.WITHDRAW else TransactionType.DEPOSIT
+            return Transaction(type, amount)
+        }
 
         val labeled = labeledAmount.find(body)
         val directional = directionAmount.find(body)
@@ -63,6 +71,8 @@ object SmsValidator {
         }
         return Transaction(type, digits)
     }
+
+    internal fun compactAccount(value: String): String? = compactStatement.find(normalize(value))?.groupValues?.get(1)
 
     internal fun normalize(value: String): String = value
         .map { char ->

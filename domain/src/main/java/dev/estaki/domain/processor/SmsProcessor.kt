@@ -21,9 +21,10 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
         val balance = (balanceRegex.find(body)?.groupValues?.getOrNull(1)
             ?: englishBalanceRegex.find(body)?.groupValues?.getOrNull(1))?.replace(Regex("[,،٬]"), "") ?: "-"
         val account = (accountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1)
-            ?: englishAccountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1))?.ifBlank { "-" } ?: "-"
+            ?: englishAccountRegex.find(sourceAccountBody)?.groupValues?.getOrNull(1)
+            ?: SmsValidator.compactAccount(raw.description))?.ifBlank { "-" } ?: "-"
         val time = timeRegex.find(body)?.value ?: "-"
-        val bankName = raw.senderName.takeIf { it.any(Char::isLetter) }
+        val bankName = raw.senderName.takeIf { it.any(Char::isLetter) || SmsValidator.compactAccount(raw.description) != null }
             ?: raw.description.lineSequence().firstOrNull()?.trim()?.takeIf { it.length <= 60 }
             ?: raw.senderName
         val epoch = raw.receiveDateTime.toLongOrNull() ?: 0L
@@ -45,13 +46,31 @@ class SmsProcessor(private val smsRawModelList: List<SmsRawModel>) {
         )
     }
 
-    private fun stableId(raw: SmsRawModel): Long {
-        val identity = "${raw.senderName}\u0000${raw.receiveDateTime}\u0000${raw.description}"
-        val digest = MessageDigest.getInstance("SHA-256").digest(identity.toByteArray(Charsets.UTF_8))
-        return ByteBuffer.wrap(digest, 0, Long.SIZE_BYTES).long and Long.MAX_VALUE
-    }
+    companion object {
+        fun manualTransaction(raw: SmsRawModel, bankName: String, account: String, type: TransactionType, amount: String): SmsModel =
+            SmsModel(
+                id = stableId(raw),
+                bankName = bankName,
+                bankAccountNumber = account,
+                transactionType = type,
+                transactionAmount = amount,
+                transactionDate = raw.receiveDate,
+                transactionDateTime = raw.receiveDateTime.toLongOrNull() ?: 0L,
+                transactionTime = timeRegex.find(SmsValidator.normalize(raw.description))?.value ?: "-",
+                bankCardBalance = "-",
+                categoryIds = emptyList(),
+                description = null,
+                smsSender = raw.senderName,
+                smsBody = raw.description,
+                isModified = true
+            )
 
-    private companion object {
+        private fun stableId(raw: SmsRawModel): Long {
+            val identity = "${raw.senderName}\u0000${raw.receiveDateTime}\u0000${raw.description}"
+            val digest = MessageDigest.getInstance("SHA-256").digest(identity.toByteArray(Charsets.UTF_8))
+            return ByteBuffer.wrap(digest, 0, Long.SIZE_BYTES).long and Long.MAX_VALUE
+        }
+
         val outgoingAccountTransfer = Regex("از حساب.{0,120}به کارت", RegexOption.DOT_MATCHES_ALL)
         val englishBalanceRegex = Regex("balance\\s*[:：]?\\s*([\\d,]+)")
         val englishAccountRegex = Regex("(?:card|account)[ \\t]*[:：]?[ \\t]*([\\d* -]{4,})")

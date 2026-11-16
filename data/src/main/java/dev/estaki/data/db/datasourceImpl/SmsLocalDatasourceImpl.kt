@@ -56,14 +56,17 @@ class SmsLocalDatasourceImpl(
             .map { messages -> messages
                 .map { it.toDomainModel() }
                 .mapNotNull { it.withCurrentClassification() }
+                .filter { it.bankAccountNumber == accountNumber }
             }.flowOn(Dispatchers.IO)
 
     private fun SmsModel.withCurrentClassification(): SmsModel? {
         if (isModified) return this
-        val transaction = SmsValidator.classify(
-            SmsRawModel(id?.toString().orEmpty(), smsSender, smsBody, transactionDate, transactionDateTime.toString())
-        ) ?: return null
-        return copy(transactionType = transaction.type, transactionAmount = transaction.amount)
+        val raw = SmsRawModel(id?.toString().orEmpty(), smsSender, smsBody, transactionDate, transactionDateTime.toString())
+        val transaction = SmsValidator.classify(raw) ?: return null
+        val recoveredAccount = if (bankAccountNumber.isBlank() || bankAccountNumber == "-") {
+            SmsProcessor(listOf(raw)).execute().firstOrNull()?.bankAccountNumber ?: bankAccountNumber
+        } else bankAccountNumber
+        return copy(transactionType = transaction.type, transactionAmount = transaction.amount, bankAccountNumber = recoveredAccount)
     }
 
     override suspend fun getAllBankAccountNumber(): Flow<List<BankCardModel>> =
