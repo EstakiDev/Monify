@@ -70,6 +70,7 @@ progressIndicator = { group = "com.ehsanmsz", name = "msz-progress-indicator", v
 composeLivedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "composeLivedata" }
 composeNavigation = { group = "androidx.navigation", name = "navigation-compose", version.ref = "composeNavigation" }
 room-android = { group =  "androidx.room", name = "room-runtime" , version.ref =  "roomAndroid" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomAndroid" }
 room-compiler = { group = "androidx.room", name = "room-compiler" , version.ref = "roomAndroid" }
 shimmer = { group = "com.valentinilk.shimmer", name = "compose-shimmer" , version.ref = "shimmerEffect" }
 junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junitJupiter" }

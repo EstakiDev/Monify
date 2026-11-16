@@ -12,13 +12,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.withContext
 
 class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao, private val smsDao: SmsDao) :
     BankAccountDataSource.Local {
     override suspend fun readAll(): Flow<List<BankCardModel>> =
-        flow {
-            val supportedAccounts = smsDao.readAll().asSequence()
+        combine(bankAccountDao.observeAll(), smsDao.observeAll()) { cards, messages ->
+            val supportedAccounts = messages.asSequence()
                 .filter { sms -> sms.isModified || SmsValidator.isBankSms(SmsRawModel(
                     sms.id?.toString().orEmpty(), sms.smsSender, sms.smsBody,
                     sms.transactionDate, sms.transactionDateTime.toString()
@@ -26,10 +27,10 @@ class BankAccountLocalDataSourceImpl(private val bankAccountDao: BankAccountDao,
                 .map { it.bankAccountNumber }
                 .filter { account -> account.count(Char::isDigit) >= 4 }
                 .toSet()
-            emit(bankAccountDao.readAll().map { it.toDomainModel() }.filter { card ->
+            cards.map { it.toDomainModel() }.filter { card ->
                 card.isItFromSms != true || (!card.bankCardNumber.isNullOrBlank() && card.bankCardNumber != "null") ||
                     card.bankAccountNumber in supportedAccounts
-            })
+            }
         }.flowOn(Dispatchers.IO)
 
     override suspend fun read(id: Long): Flow<BankCardModel> =

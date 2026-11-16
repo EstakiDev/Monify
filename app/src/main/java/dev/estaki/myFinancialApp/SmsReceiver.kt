@@ -8,20 +8,24 @@ import android.content.Intent
 import android.provider.Telephony
 import dagger.hilt.android.AndroidEntryPoint
 import dev.estaki.domain.models.SmsRawModel
+import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.processor.SmsProcessor
-import dev.estaki.domain.usecases.UpsertSms
+import dev.estaki.domain.usecases.CacheAllBankAccountToDb
+import dev.estaki.domain.usecases.CacheSmsToDb
 import dev.estaki.myFinancialApp.workers.WorkersEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class SmsReceiver : BroadcastReceiver() {
-    @Inject lateinit var upsertSms: UpsertSms
+    @Inject lateinit var cacheSms: CacheSmsToDb
+    @Inject lateinit var cacheAccounts: CacheAllBankAccountToDb
 
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action != Telephony.Sms.Intents.SMS_RECEIVED_ACTION) return
@@ -44,14 +48,23 @@ class SmsReceiver : BroadcastReceiver() {
                 )
                 val transaction = SmsProcessor(listOf(raw)).execute().firstOrNull() ?: return@launch
 
-                // Persist before scheduling nonessential reminders so a scheduling failure cannot
-                // lose the transaction itself.
-                upsertSms(transaction)
+                val inserted = cacheSms(listOf(transaction)).first().firstOrNull() ?: return@launch
+                if (inserted == -1L) return@launch
                 NotificationHandler.showSmsNotification(
                     appContext,
                     title = localized("تراکنش بانکی جدید"),
                     message = localized("برای مشاهده جزئیات، برنامه را باز کنید.")
                 )
+                if (transaction.bankAccountNumber.count(Char::isDigit) >= 4) {
+                    cacheAccounts(listOf(BankCardModel(
+                        id = transaction.bankAccountNumber.hashCode(),
+                        bankName = transaction.bankName,
+                        bankAccountNumber = transaction.bankAccountNumber,
+                        bankCardBalance = transaction.bankCardBalance,
+                        bankCardNumber = null,
+                        isItFromSms = true
+                    ))).first()
+                }
                 WorkersEngine.scheduleSmsRemindersWithWorkManager(
                     duration = 4,
                     timeUnit = TimeUnit.HOURS,

@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Upsert
 import dev.estaki.data.entities.BankAccountEntity
 import dev.estaki.domain.models.BankCardModel
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BankAccountDao {
@@ -36,6 +37,9 @@ interface BankAccountDao {
 
     @Query("SELECT * FROM tb_bank_account ORDER BY id DESC")
     fun readAll():List<BankAccountEntity>
+
+    @Query("SELECT * FROM tb_bank_account ORDER BY id DESC")
+    fun observeAll(): Flow<List<BankAccountEntity>>
 
     @Query("SELECT * FROM tb_bank_account WHERE id=:id")
     fun read(id: Long): BankAccountEntity

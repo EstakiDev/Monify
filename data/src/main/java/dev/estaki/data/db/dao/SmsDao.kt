@@ -10,6 +10,7 @@ import dev.estaki.data.entities.SmsBankAccountProjection
 import dev.estaki.data.entities.SmsEntity
 import dev.estaki.domain.models.BankCardModel
 import dev.estaki.domain.models.SmsModel
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SmsDao {
@@ -19,6 +20,9 @@ interface SmsDao {
 
     @Query("SELECT * FROM tb_sms ORDER BY id DESC")
     fun readAll(): List<SmsEntity>
+
+    @Query("SELECT * FROM tb_sms ORDER BY id DESC")
+    fun observeAll(): Flow<List<SmsEntity>>
 
     @Query("SELECT * FROM tb_sms WHERE id=:id")
     fun read(id: Long): SmsEntity
@@ -33,7 +37,7 @@ interface SmsDao {
     fun getCount(): Long
 
     @Query("SELECT * FROM tb_sms WHERE bankAccountNumber=:bankAccountNumber AND isRemoved = 0 ORDER BY transactionDateTime DESC")
-    fun readByBankAccountNumber(bankAccountNumber: String): List<SmsEntity>
+    fun readByBankAccountNumber(bankAccountNumber: String): Flow<List<SmsEntity>>
 
     @Query("""
         SELECT account.bankAccountNumber, account.bankName, account.bankCardBalance

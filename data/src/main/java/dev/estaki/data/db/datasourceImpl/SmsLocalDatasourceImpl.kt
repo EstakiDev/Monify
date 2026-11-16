@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class SmsLocalDatasourceImpl(
@@ -51,11 +52,11 @@ class SmsLocalDatasourceImpl(
     override suspend fun getAllCount(): Flow<Long> = flow { emit(smsDao.getCount()) }.flowOn(Dispatchers.IO)
 
     override suspend fun getSmsByBankAccountNumber(accountNumber: String): Flow<List<SmsModel>> =
-        flow {
-            emit(smsDao.readByBankAccountNumber(accountNumber)
+        smsDao.readByBankAccountNumber(accountNumber)
+            .map { messages -> messages
                 .map { it.toDomainModel() }
-                .mapNotNull { it.withCurrentClassification() })
-        }.flowOn(Dispatchers.IO)
+                .mapNotNull { it.withCurrentClassification() }
+            }.flowOn(Dispatchers.IO)
 
     private fun SmsModel.withCurrentClassification(): SmsModel? {
         if (isModified) return this

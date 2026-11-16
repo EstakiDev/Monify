@@ -34,7 +34,7 @@
             </intent-filter>
         </activity>
         <receiver
-            android:name=".SmsReceiver"
+            android:name="dev.estaki.myFinancialApp.SmsReceiver"
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
