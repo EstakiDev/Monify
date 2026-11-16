@@ -129,12 +129,6 @@ private fun CategoryChip(category: CategoryModel, onToggle: (Long) -> Unit) {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(painter = categoryIcon(category.id), contentDescription = null, modifier = Modifier.size(17.dp), tint = foreground)
-                if (selected) Icon(
-                    Icons.Filled.Check, contentDescription = null,
-                    modifier = Modifier.align(Alignment.BottomEnd).size(12.dp)
-                        .background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                    tint = MaterialTheme.colorScheme.primary
-                )
             }
             Text(
                 text = localized(category.title.trim()),
@@ -145,6 +139,14 @@ private fun CategoryChip(category: CategoryModel, onToggle: (Long) -> Unit) {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            if (selected) {
+                Box(
+                    modifier = Modifier.size(18.dp).background(MaterialTheme.colorScheme.primary.copy(alpha = 0.13f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(13.dp), tint = MaterialTheme.colorScheme.primary)
+                }
+            }
         }
     }
 }
