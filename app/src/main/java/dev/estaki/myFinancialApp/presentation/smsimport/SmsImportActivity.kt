@@ -12,14 +12,19 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,7 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,7 +76,15 @@ private fun SmsImportScreen(onClose: () -> Unit, viewModel: SmsImportViewModel =
     BackHandler(enabled = state.sender != null && !state.isSaving) { back() }
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(if (state.sender == null) { if (fa) "انتخاب فرستنده" else "Select sender" } else state.sender.orEmpty().localizedDigits()) },
+            title = {
+                Text(
+                    if (state.sender == null) { if (fa) "انتخاب فرستنده" else "Select sender" } else state.sender.orEmpty().localizedDigits(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
             navigationIcon = { IconButton(onClick = back, enabled = !state.isSaving) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (fa) "بازگشت" else "Back") } }
         )
     }) { padding ->
@@ -87,16 +102,67 @@ private fun SmsImportScreen(onClose: () -> Unit, viewModel: SmsImportViewModel =
             } else if (state.isLoading) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
             } else if (state.sender == null) {
-                OutlinedTextField(search, { search = it }, Modifier.fillMaxWidth(), label = { Text(if (fa) "جست‌وجوی فرستنده" else "Search senders") }, singleLine = true)
-                Spacer(Modifier.height(12.dp))
+                Text(
+                    if (fa) "فرستنده پیامک‌های بانکی را انتخاب کنید." else "Choose the sender of your bank messages.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = search,
+                    onValueChange = { search = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(if (fa) "جست‌وجوی فرستنده" else "Search senders", style = MaterialTheme.typography.bodySmall) },
+                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(20.dp)) },
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                    shape = RoundedCornerShape(16.dp),
+                    singleLine = true
+                )
+                Spacer(Modifier.height(20.dp))
                 val senders = state.senders.filter { it.address.contains(search.arabicToDecimal(), ignoreCase = true) }
-                if (senders.isEmpty()) Text(if (fa) "فرستنده‌ای پیدا نشد." else "No senders found.")
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
+                Text(
+                    if (fa) "فرستنده‌ها" else "Senders",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+                )
+                if (senders.isEmpty()) Text(
+                    if (fa) "فرستنده‌ای پیدا نشد." else "No senders found.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 12.dp)
+                )
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp)) {
                     items(senders, key = { it.address }) { sender ->
-                        ElevatedCard(Modifier.fillMaxWidth().clickable { viewModel.selectSender(sender.address) }) {
-                            Row(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(sender.address.localizedDigits(), fontWeight = FontWeight.SemiBold)
-                                Text((if (fa) "${sender.count} پیامک" else "${sender.count} messages").localizedDigits(), style = MaterialTheme.typography.bodySmall)
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().clickable { viewModel.selectSender(sender.address) },
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.surfaceContainerLow
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier.size(36.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Filled.Email, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                                }
+                                Text(
+                                    sender.address.localizedDigits(),
+                                    modifier = Modifier.weight(1f),
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
+                                    fontWeight = FontWeight.Medium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    (if (fa) "${sender.count} پیامک" else "${sender.count} messages").localizedDigits(),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
