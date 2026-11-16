@@ -3,8 +3,11 @@ package dev.estaki.myFinancialApp.presentation.detailScreen
 import dev.estaki.ui_utils.localized
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +18,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -53,9 +59,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextRange
@@ -200,7 +209,7 @@ fun TransactionDetail(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun TransactionDetailUi(
     modifier: Modifier = Modifier,
@@ -212,6 +221,14 @@ fun TransactionDetailUi(
     CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
 
         val scrollState = rememberScrollState()
+        val descriptionBringIntoView = remember { BringIntoViewRequester() }
+        var descriptionFocused by remember { mutableStateOf(false) }
+        var saveButtonHeight by remember { mutableStateOf(0) }
+        val density = LocalDensity.current
+        val keyboardBottom = WindowInsets.ime.getBottom(density)
+        LaunchedEffect(descriptionFocused, keyboardBottom) {
+            if (descriptionFocused) descriptionBringIntoView.bringIntoView()
+        }
         var selectedTransactionType by remember { mutableStateOf(TransactionType.DEPOSIT) }
         var bankCardDropDownExpanded by remember { mutableStateOf(false) }
         var menuItemData by remember { mutableStateOf<List<BankCardModel>>(state.bankCardList) }
@@ -313,14 +330,14 @@ fun TransactionDetailUi(
         }
 
         Box(
-            Modifier.fillMaxSize(),
+            Modifier.fillMaxSize().imePadding(),
         ) {
             Column(
                 Modifier
                     .fillMaxSize()
+                    .padding(bottom = with(density) { saveButtonHeight.toDp() })
                     .verticalScroll(scrollState)
                     .alpha(if (state.isLoading) 0f else 1f)
-                    .padding(bottom = 92.dp)
             ) {
                 Spacer(Modifier.size(8.dp))
 
@@ -655,7 +672,9 @@ fun TransactionDetailUi(
                     modifier = Modifier
                         .padding(AppSpacing.Large)
                         .fillMaxWidth()
-                        .height(160.dp),
+                        .height(160.dp)
+                        .bringIntoViewRequester(descriptionBringIntoView)
+                        .onFocusChanged { descriptionFocused = it.isFocused },
                     shape = RoundedCornerShape(16.dp),
                     textStyle = TextStyle(
                         fontSize = 15.sp,
@@ -687,9 +706,10 @@ fun TransactionDetailUi(
 
             MyOutlinedButton(
                 modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .onSizeChanged { saveButtonHeight = it.height }
                     .fillMaxWidth()
                     .padding(AppSpacing.Large)
-                    .align(Alignment.BottomCenter)
                     .alpha(if (state.isLoading) 0f else 1f), text = localized("ذخیره")
             ) {
 
