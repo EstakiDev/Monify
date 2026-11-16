@@ -3,12 +3,12 @@ package dev.estaki.myFinancialApp.presentation.main
 import dev.estaki.ui_utils.localized
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
 import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -61,76 +61,75 @@ fun MyCardItem(smsModel: SmsModel, categories: List<CategoryModel> = emptyList()
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
-                    verticalAlignment = Alignment.CenterVertically
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier.size(44.dp).background(accent.copy(alpha = 0.12f), CircleShape),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier.size(44.dp).background(accent.copy(alpha = 0.12f), CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (isIncome) "↙" else "↗",
-                            color = accent,
-                            fontSize = 24.sp,
-                            lineHeight = 28.sp
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            text = if (isIncome) localized("واریز") else localized("برداشت"),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = smsModel.bankName.localizedDigits(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = listOf(smsModel.transactionDate, smsModel.transactionTime)
-                                .filter { it.isNotBlank() && it != "-" }.joinToString("  ·  ").localizedDigits(),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(
-                            text = smsModel.transactionAmount.formatAmountForDisplay(persianDigits = AppAppearance.language == AppLanguage.PERSIAN),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = accent
-                        )
-                        Text(
-                            text = localized("ریال"),
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                    Text(
+                        text = if (isIncome) "↙" else "↗",
+                        color = accent,
+                        fontSize = 24.sp,
+                        lineHeight = 28.sp
+                    )
+                }
+                Column(modifier = Modifier.weight(1.2f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = if (isIncome) localized("واریز") else localized("برداشت"),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = smsModel.bankName.localizedDigits(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = listOf(smsModel.transactionDate, smsModel.transactionTime)
+                            .filter { it.isNotBlank() && it != "-" }.joinToString("  ·  ").localizedDigits(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (smsModel.categoryIds.isNotEmpty()) {
+                        TransactionCategories(smsModel.categoryIds.distinct(), categories)
                     }
                 }
-                if (smsModel.categoryIds.isNotEmpty()) {
-                    TransactionCategories(smsModel.categoryIds.distinct(), categories)
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = smsModel.transactionAmount.formatAmountForDisplay(persianDigits = AppAppearance.language == AppLanguage.PERSIAN),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = accent
+                    )
+                    Text(
+                        text = localized("ریال"),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun TransactionCategories(categoryIds: List<Long>, categories: List<CategoryModel>) {
     val titles = categories.associateBy { it.id }
-    Row(
-        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
-            .padding(start = AppSpacing.Medium, end = AppSpacing.Medium, bottom = AppSpacing.Medium),
-        horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)
+    FlowRow(
+        modifier = Modifier.fillMaxWidth().padding(top = AppSpacing.ExtraSmall),
+        horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)
     ) {
         categoryIds.forEach { id ->
             val title = localized(titles[id]?.title?.trim() ?: "دسته بندی")
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)) {
+            Surface(modifier = Modifier.widthIn(max = 140.dp), shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -140,7 +139,7 @@ private fun TransactionCategories(categoryIds: List<Long>, categories: List<Cate
                         tint = MaterialTheme.colorScheme.onSecondaryContainer)
                     Text(title, style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 140.dp))
+                        maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }
