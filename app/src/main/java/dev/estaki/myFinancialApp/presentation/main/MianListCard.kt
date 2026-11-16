@@ -24,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +54,7 @@ fun MyCardItem(smsModel: SmsModel, categories: List<CategoryModel> = emptyList()
 
     CompositionLocalProvider(LocalLayoutDirection provides LocalLayoutDirection.current) {
         Card(
-            modifier = Modifier.fillMaxWidth().then(smsItemInteraction(smsModel, onCardClick)),
+            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).then(smsItemInteraction(smsModel, onCardClick)),
             shape = RoundedCornerShape(18.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
