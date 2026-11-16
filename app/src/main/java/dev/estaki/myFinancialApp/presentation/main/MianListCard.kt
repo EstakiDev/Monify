@@ -63,7 +63,7 @@ fun MyCardItem(smsModel: SmsModel, categories: List<CategoryModel> = emptyList()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
@@ -77,7 +77,7 @@ fun MyCardItem(smsModel: SmsModel, categories: List<CategoryModel> = emptyList()
                         lineHeight = 28.sp
                     )
                 }
-                Column(modifier = Modifier.weight(1.2f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = if (isIncome) localized("واریز") else localized("برداشت"),
                         style = MaterialTheme.typography.titleSmall,
@@ -100,7 +100,7 @@ fun MyCardItem(smsModel: SmsModel, categories: List<CategoryModel> = emptyList()
                         TransactionCategories(smsModel.categoryIds.distinct(), categories)
                     }
                 }
-                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Column(modifier = Modifier.widthIn(max = 128.dp), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(
                         text = smsModel.transactionAmount.formatAmountForDisplay(persianDigits = AppAppearance.language == AppLanguage.PERSIAN),
                         style = MaterialTheme.typography.titleSmall,
@@ -131,11 +131,11 @@ private fun TransactionCategories(categoryIds: List<Long>, categories: List<Cate
             val title = localized(titles[id]?.title?.trim() ?: "دسته بندی")
             Surface(modifier = Modifier.widthIn(max = 140.dp), shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f)) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(categoryIcon(id), contentDescription = null, modifier = Modifier.size(14.dp),
+                    Icon(categoryIcon(id), contentDescription = null, modifier = Modifier.size(12.dp),
                         tint = MaterialTheme.colorScheme.onSecondaryContainer)
                     Text(title, style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
