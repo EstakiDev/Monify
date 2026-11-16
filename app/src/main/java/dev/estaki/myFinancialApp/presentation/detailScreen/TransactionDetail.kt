@@ -52,6 +52,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -352,9 +353,7 @@ fun TransactionDetailUi(
                         OutlinedTextField(
                             value = bankName,
                             visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
-                            onValueChange = {
-                                bankName = it
-                            },
+                            onValueChange = {},
                             label = {
                                 Text(
                                     localized("نام بانک"), style = TextStyle(
@@ -368,8 +367,10 @@ fun TransactionDetailUi(
                             shape = RoundedCornerShape(16.dp),
                             supportingText = if (bankNameErr.first) {
                                 { Text(text = bankNameErr.second) }
-                            } else null,
-                            modifier = Modifier.fillMaxWidth(),
+                            } else {
+                                { Text(if (AppAppearance.language == AppLanguage.PERSIAN) "برای تغییر بانک، حساب دیگری انتخاب کنید." else "Choose another account to change the bank.") }
+                            },
+                            modifier = Modifier.fillMaxWidth().focusProperties { canFocus = false },
                             textStyle = TextStyle(
                                 fontSize = 16.sp,
                                 fontFamily = ariaFaNumFontFamily,
