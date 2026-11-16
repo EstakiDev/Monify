@@ -9,19 +9,14 @@ import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,7 +26,6 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -69,7 +63,6 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
@@ -92,6 +85,7 @@ import dev.estaki.ui_utils.AppLanguage
 import androidx.compose.ui.text.input.VisualTransformation
 import dev.estaki.myFinancialApp.presentation.actions.AddCreditCardActions
 import dev.estaki.myFinancialApp.presentation.actions.TransactionDetailScreenActions
+import dev.estaki.myFinancialApp.presentation.category.CategorySelector
 import dev.estaki.myFinancialApp.presentation.main.MyCardItem
 import dev.estaki.myFinancialApp.presentation.states.MyTopAppBarState
 import dev.estaki.myFinancialApp.presentation.states.TransactionDetailScreenState
@@ -105,7 +99,6 @@ import dev.estaki.ui_utils.components.MyOutlinedButton
 import dev.estaki.ui_utils.ui.theme.AppSpacing
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnDarkTheme
 import dev.estaki.ui_utils.ui.theme.ColorTextGrayOnLiteTheme
-import dev.estaki.ui_utils.ui.theme.DarkYellow
 import dev.estaki.ui_utils.ui.theme.LiteRed
 import dev.estaki.ui_utils.ui.theme.ariaFaNumFontFamily
 import dev.estaki.ui_utils.utils.PersianDigitsTransformation
@@ -242,16 +235,9 @@ fun TransactionDetailUi(
             mutableStateOf("")
         }
         var localCategoryList by remember { mutableStateOf(state.categoryList) }
-        LaunchedEffect(key1 = state) {
-            if (state.categoryList.isEmpty().not()) {
-                localCategoryList = state.categoryList
-            }
-            state.smsModel?.let { smsM ->
-                if (smsM.categoryIds.isNotEmpty()) localCategoryList = state.categoryList.map {
-                    if (smsM.categoryIds.contains(it.id)) it.copy(isChecked = true)
-                    else it
-                }
-            }
+        LaunchedEffect(state.categoryList, state.smsModel?.id) {
+            val selectedIds = state.smsModel?.categoryIds.orEmpty().toSet()
+            localCategoryList = state.categoryList.map { it.copy(isChecked = it.id in selectedIds) }
         }
         LaunchedEffect(key1 = state.bankCardList) {
             menuItemData = state.bankCardList
@@ -653,6 +639,12 @@ fun TransactionDetailUi(
                     }
                 }
 
+                CategorySelector(categories = localCategoryList) { selectedId ->
+                    localCategoryList = localCategoryList.map { category ->
+                        if (category.id == selectedId) category.copy(isChecked = !category.isChecked) else category
+                    }
+                }
+
                 OutlinedTextField(
                     visualTransformation = if (AppAppearance.language == AppLanguage.PERSIAN) PersianDigitsTransformation else VisualTransformation.None,
                     modifier = Modifier
@@ -685,77 +677,6 @@ fun TransactionDetailUi(
                     onValueChange = {
                         text = it
                     })
-
-                Spacer(Modifier.size(8.dp))
-
-                Text(
-                    text = localized("دسته بندی"),
-                    modifier = Modifier.padding(start = AppSpacing.Large, bottom = AppSpacing.Small),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                LazyRow(
-                    Modifier
-                        .fillMaxHeight(0.6F)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
-                    contentPadding = PaddingValues(horizontal = AppSpacing.Large),
-                ) {
-
-                    items(localCategoryList, key = {
-                        it.id
-                    }) { item ->
-                        Surface(
-                            shape = RoundedCornerShape(10.dp), onClick = {
-                                localCategoryList = localCategoryList.map {
-                                    if (it.id == item.id) it.copy(isChecked = !it.isChecked)
-                                    else it
-                                }
-                            }) {
-                            Card(
-                                modifier = Modifier.wrapContentSize()
-
-                            ) {
-
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Timber.tag("TAG").d("item isChecked -> ${item.isChecked}")
-                                    if (item.isChecked) {
-                                        Timber.tag("TAG").d("item isChecked -> ${item.isChecked}")
-
-                                        Icon(
-                                            modifier = Modifier.size(18.dp),
-                                            imageVector = Icons.Default.Check,
-                                            contentDescription = "selected",
-                                            tint = DarkYellow
-                                        )
-                                    }
-                                    Text(
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(horizontal = 8.dp),
-                                        fontFamily = ariaFaNumFontFamily,
-                                        fontWeight = FontWeight.SemiBold,
-                                        text = localized(item.title),
-                                        textAlign = TextAlign.Center,
-                                        style = TextStyle(fontSize = 13.sp),
-                                    )
-
-                                }
-                            }
-
-
-                        }
-                    }
-                }
-
-
             }
 
 

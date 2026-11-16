@@ -10,6 +10,7 @@ import dev.estaki.kt_pure_utils.toAmountOrNull
 import dev.estaki.domain.usecases.CacheCategoryToDb
 import dev.estaki.domain.usecases.GetAllBankCardFromTbBankCard
 import dev.estaki.domain.usecases.GetAllCategoryCount
+import dev.estaki.domain.usecases.GetAllCategoryList
 import dev.estaki.domain.usecases.GetAllSmsByBankAccountNumber
 import dev.estaki.domain.usecases.GetFirstOpenApp
 import dev.estaki.domain.usecases.SaveFirstAppOpen
@@ -23,6 +24,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -34,6 +36,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val getAllSmsByBankAccountNumberUseCase: GetAllSmsByBankAccountNumber,
     private val getAllCategoryCount: GetAllCategoryCount,
+    private val getAllCategoryList: GetAllCategoryList,
     private val cacheCategoryToDb: CacheCategoryToDb,
     private val getFirstOpenApp: GetFirstOpenApp,
     private val saveFirstAppOpen: SaveFirstAppOpen,
@@ -174,6 +177,11 @@ class MainViewModel @Inject constructor(
             }.collect { count ->
                 if (count < 1)
                     addCategoryToDb()
+                val categories = getAllCategoryList().catch { error ->
+                    Timber.e(error, "Unable to load categories")
+                    emit(emptyList())
+                }.first()
+                _mainScreenState.update { it.copy(categories = categories) }
             }
         }
     }

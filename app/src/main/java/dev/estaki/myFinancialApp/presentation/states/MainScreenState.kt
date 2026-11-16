@@ -1,10 +1,12 @@
 package dev.estaki.myFinancialApp.presentation.states
 
 import dev.estaki.domain.models.BankCardModel
+import dev.estaki.domain.models.CategoryModel
 import dev.estaki.domain.models.SmsModel
 
 data class MainScreenState(
     val smsList:List<SmsModel> = emptyList(),
+    val categories: List<CategoryModel> = emptyList(),
     val incomeTotal: String = "0",
     val expenseTotal: String = "0",
     val hasUnparsedAmounts: Boolean = false,

@@ -3,6 +3,8 @@ package dev.estaki.myFinancialApp.presentation.main
 import dev.estaki.ui_utils.localized
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import dev.estaki.ui_utils.LocalDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -30,15 +33,17 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.estaki.domain.models.SmsModel
+import dev.estaki.domain.models.CategoryModel
 import dev.estaki.domain.models.TransactionType
 import dev.estaki.kt_pure_utils.formatAmountForDisplay
 import dev.estaki.ui_utils.localizedDigits
 import dev.estaki.ui_utils.AppAppearance
 import dev.estaki.ui_utils.AppLanguage
 import dev.estaki.ui_utils.ui.theme.AppSpacing
+import dev.estaki.myFinancialApp.presentation.category.categoryIcon
 
 @Composable
-fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
+fun MyCardItem(smsModel: SmsModel, categories: List<CategoryModel> = emptyList(), onCardClick: () -> Unit) {
     val isIncome = smsModel.transactionType == TransactionType.DEPOSIT
     val accent = if (isIncome) {
         if (LocalDarkTheme.current) Color(0xFF70D7B3) else Color(0xFF087858)
@@ -88,6 +93,27 @@ fun MyCardItem(smsModel: SmsModel, onCardClick: () -> Unit) {
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (smsModel.categoryIds.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            smsModel.categoryIds.distinct().forEach { categoryId ->
+                                val title = categories.firstOrNull { it.id == categoryId }?.title
+                                Box(
+                                    modifier = Modifier.size(24.dp).background(MaterialTheme.colorScheme.secondaryContainer, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        painter = categoryIcon(categoryId),
+                                        contentDescription = localized(title ?: "دسته بندی"),
+                                        modifier = Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
                 Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Text(

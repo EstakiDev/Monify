@@ -358,6 +358,7 @@ fun MainScreenUi(
                                         val transaction = account.transactions[itemIndex]
                                         MyCardItem(
                                             transaction,
+                                            categories = state.categories,
                                             onCardClick = {
                                                 if (!state.isLoading && account.accountNumber == state.currentBankAccountNumber) {
                                                     navController.navigate("AddDetailScreen/${transaction.id}")
