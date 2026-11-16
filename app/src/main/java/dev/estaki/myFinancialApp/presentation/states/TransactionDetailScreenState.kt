@@ -10,5 +10,6 @@ data class TransactionDetailScreenState(
     var bankCardList:List<BankCardModel> = emptyList(),
     val isLoading: Boolean = true,
     val isError: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val operationCompleted: Boolean = false
 )

@@ -44,6 +44,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -136,14 +137,13 @@ fun TransactionDetail(
                     detailScreenViewModel.onAction(TransactionDetailScreenActions.DeleteTransaction(it))
                 }
                 showWarningDialog =false
-                navController?.navigateUp()
             },
             localized("هشدار"),
             localized("از حذف کردن این تراکنش بانکی اطمینان دارید؟"),
             icon = Icons.Rounded.Warning
         )
     }
-    DisposableEffect(true) {
+    DisposableEffect(smsId, state.smsModel?.id, AppAppearance.language) {
         onComposing(
             MyTopAppBarState(
                 title = if (smsId != 0L) localized("ویرایش اطلاعات تراکنش") else localized("افزودن تراکنش جدید"),
@@ -175,16 +175,33 @@ fun TransactionDetail(
         onDispose {}
     }
 
-    LaunchedEffect(false) {
+    LaunchedEffect(smsId) {
         detailScreenViewModel.onAction(
             TransactionDetailScreenActions.LoadTransaction(
                 smsId = smsId
             )
         )
     }
-    TransactionDetailUi(
-        onAction = detailScreenViewModel::onAction, navController = navController, state = state
-    )
+    LaunchedEffect(state.operationCompleted) {
+        if (state.operationCompleted) navController?.navigateUp()
+    }
+    if (state.isError) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(AppSpacing.Large),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                if (AppAppearance.language == AppLanguage.PERSIAN) "بارگذاری تراکنش انجام نشد." else "Could not load the transaction.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            TextButton(onClick = { detailScreenViewModel.onAction(TransactionDetailScreenActions.LoadTransaction(smsId)) }) {
+                Text(if (AppAppearance.language == AppLanguage.PERSIAN) "تلاش دوباره" else "Try again")
+            }
+        }
+    } else {
+        TransactionDetailUi(onAction = detailScreenViewModel::onAction, navController = navController, state = state)
+    }
 
 }
 
@@ -794,7 +811,7 @@ fun TransactionDetailUi(
                                     transactionTime = time,
                                     bankName = bankName,
                                     description = text,
-                                    categoryIds = state.categoryList.filter { it.isChecked }
+                                    categoryIds = localCategoryList.filter { it.isChecked }
                                         .map { it.id },
                                     transactionType = selectedTransactionType,
                                     isModified = true
@@ -802,7 +819,6 @@ fun TransactionDetailUi(
                             )
                         )
 
-                        navController?.navigateUp()
                     }
                 }
 

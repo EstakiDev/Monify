@@ -1,27 +1,27 @@
 package dev.estaki.myFinancialApp.presentation.detailScreen
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.estaki.domain.error.MyCustomSnackBarType
-import dev.estaki.domain.models.SmsModel
-import dev.estaki.domain.usecases.SetIsRemovedSms
 import dev.estaki.domain.usecases.GetAllBankCardFromTbBankCard
 import dev.estaki.domain.usecases.GetAllCategoryList
 import dev.estaki.domain.usecases.GetSingleSms
+import dev.estaki.domain.usecases.SetIsRemovedSms
 import dev.estaki.domain.usecases.SetSmsWasSaw
 import dev.estaki.domain.usecases.UpsertSms
 import dev.estaki.myFinancialApp.presentation.actions.TransactionDetailScreenActions
 import dev.estaki.myFinancialApp.presentation.states.TransactionDetailScreenState
 import dev.estaki.ui_utils.SnackBarController
 import dev.estaki.ui_utils.SnackBarEvent
+import dev.estaki.ui_utils.localized
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -33,163 +33,65 @@ class TransactionDetailScreenViewModel @Inject constructor(
     private val setSmsWasSawUseCase: SetSmsWasSaw,
     private val getAllBankCardFromTbBankCard: GetAllBankCardFromTbBankCard
 ) : ViewModel() {
+    private val mutableState = MutableStateFlow(TransactionDetailScreenState())
+    val state = mutableState.asStateFlow()
 
-    private var _state: MutableStateFlow<TransactionDetailScreenState> = MutableStateFlow(TransactionDetailScreenState())
-    val state: StateFlow<TransactionDetailScreenState> = _state.asStateFlow()
-
-
-    fun onAction(action: TransactionDetailScreenActions){
-        when(action){
-            is TransactionDetailScreenActions.DeleteTransaction -> {
-                viewModelScope.launch {
-                    _state.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-                    deleteTransaction(action.smsModel)
-                    _state.update {
-                        it.copy(
-                            isLoading = false
-                        )
-                    }
-                }
+    fun onAction(action: TransactionDetailScreenActions) {
+        when (action) {
+            is TransactionDetailScreenActions.LoadTransaction -> loadTransaction(action.smsId)
+            is TransactionDetailScreenActions.SaveTransaction -> performChange {
+                saveSmsUseCase(action.smsModel)
             }
-            is TransactionDetailScreenActions.LoadTransaction -> {
-                viewModelScope.launch {
-                    _state.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-                    getAllBankCardFromTb()
-                    getCategoryList()
-                    if (action.smsId != 0L){
-                        loadSmsById(action.smsId)
-                        setSmsWasSawUseCase.invoke(action.smsId)
-                    }
-                    _state.update {
-                        it.copy(
-                            isLoading = false
-                        )
-                    }
-                }
-            }
-            is TransactionDetailScreenActions.SaveTransaction -> {
-                viewModelScope.launch {
-                    _state.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-                    saveSms(action.smsModel)
-                    _state.update {
-                        it.copy(
-                            isLoading = false
-                        )
-                    }
-                    SnackBarController.sendEvent(
-                        SnackBarEvent(
-                            "تغییرات مورد نظر شما ذخیره شد.",
-                            type = MyCustomSnackBarType.SUCCESS
-                        )
-                    )
-                }
+            is TransactionDetailScreenActions.DeleteTransaction -> performChange {
+                check(setIsRemovedSms(action.smsModel).first() > 0)
             }
         }
     }
 
-    private suspend fun deleteTransaction(smsModel: SmsModel) {
-        setIsRemovedSms. invoke(smsModel).catch {
-            it.printStackTrace()
-            SnackBarController.sendEvent(
-                SnackBarEvent(
-                    "متاسفانه عملیات مورد نظر با خطا مواجه شد!",
-                    type = MyCustomSnackBarType.ERROR
-                )
-            )
-        }.collect {
-            SnackBarController.sendEvent(
-                SnackBarEvent(
-                    "تغییرات مورد نظر شما ذخیره شد.",
-                    type = MyCustomSnackBarType.SUCCESS
-                )
-            )
-        }
-    }
-    private suspend fun getAllBankCardFromTb() {
-        getAllBankCardFromTbBankCard.invoke().catch {
-            it.printStackTrace()
-            SnackBarController.sendEvent(
-                SnackBarEvent(
-                    "متاسفانه عملیات مورد نظر با خطا مواجه شد!",
-                    type = MyCustomSnackBarType.ERROR
-                )
-            )
-        }.collect {bankCardList ->
-                _state.update {
-                    it.copy(
-                        bankCardList = bankCardList
-                    )
-                }
-            }
-    }
-    private suspend fun loadSmsById(id: Long) {
-            getSingleSmsUseCase.invoke(id).catch {
-                it.printStackTrace()
-                SnackBarController.sendEvent(
-                    SnackBarEvent(
-                        "متاسفانه عملیات مورد نظر با خطا مواجه شد!",
-                        type = MyCustomSnackBarType.ERROR
-                    )
-                )
-            }.collect {smsModel ->
-                _state.update {
-                    it.copy(
-                        smsModel = smsModel
-                    )
-                }
-            }
-    }
-    private suspend fun setSmsWasSaw(id: Long) {
-        getSingleSmsUseCase.invoke(id).catch {
-            it.printStackTrace()
-            SnackBarController.sendEvent(
-                SnackBarEvent(
-                    "متاسفانه عملیات مورد نظر با خطا مواجه شد!",
-                    type = MyCustomSnackBarType.ERROR
-                )
-            )
-        }.collect {smsModel ->
-            _state.update {
-                it.copy(
-                    smsModel = smsModel
-                )
-            }
-        }
-    }
-    private fun saveSms(smsModel: SmsModel) {
+    private fun loadTransaction(id: Long) {
         viewModelScope.launch {
-            saveSmsUseCase.invoke(smsModel)
+            mutableState.update { it.copy(isLoading = true, isError = false) }
+            try {
+                val accounts = getAllBankCardFromTbBankCard().first()
+                val categories = getAllCategoryList().first()
+                val sms = if (id == 0L) null else getSingleSmsUseCase(id).first()
+                mutableState.update {
+                    it.copy(bankCardList = accounts, categoryList = categories, smsModel = sms, isLoading = false)
+                }
+                if (id != 0L) {
+                    try {
+                        setSmsWasSawUseCase(id)
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (error: Exception) {
+                        Timber.w(error, "Unable to mark transaction as seen")
+                    }
+                }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Timber.e(error, "Unable to load transaction")
+                mutableState.update { it.copy(isLoading = false, isError = true) }
+            }
         }
     }
 
-    private suspend fun getCategoryList() {
-        getAllCategoryList.invoke().catch {
-            it.printStackTrace()
-            SnackBarController.sendEvent(
-                SnackBarEvent(
-                    "متاسفانه عملیات مورد نظر با خطا مواجه شد!",
-                    type = MyCustomSnackBarType.ERROR
-                )
-            )
-        }.collect { items ->
-            _state.update {
-                it.copy(
-                    categoryList = items
+    private fun performChange(change: suspend () -> Unit) {
+        if (state.value.isLoading) return
+        viewModelScope.launch {
+            mutableState.update { it.copy(isLoading = true) }
+            try {
+                change()
+                mutableState.update { it.copy(isLoading = false, operationCompleted = true) }
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Timber.e(error, "Unable to save transaction change")
+                mutableState.update { it.copy(isLoading = false) }
+                SnackBarController.sendEvent(
+                    SnackBarEvent(localized("متاسفانه عملیات مورد نظر با خطا مواجه شد!"), type = MyCustomSnackBarType.ERROR)
                 )
             }
         }
-
     }
 }
