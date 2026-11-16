@@ -8,6 +8,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -30,35 +31,38 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val darkTheme = when (AppAppearance.themeMode) {
-                ThemeMode.SYSTEM -> isSystemInDarkTheme()
-                ThemeMode.LIGHT -> false
-                ThemeMode.DARK -> true
-            }
-            val direction = if (AppAppearance.language == AppLanguage.PERSIAN) LayoutDirection.Rtl else LayoutDirection.Ltr
-            val systemConfiguration = LocalConfiguration.current
-            val locale = if (AppAppearance.language == AppLanguage.PERSIAN) Locale.forLanguageTag("fa") else Locale.ENGLISH
-            val configuration = remember(systemConfiguration, locale) {
-                Configuration(systemConfiguration).apply { setLocale(locale) }
-            }
-            val localizedContext = remember(configuration) {
-                ContextThemeWrapper(this@MainActivity, this@MainActivity.theme).apply {
-                    applyOverrideConfiguration(configuration)
-                }
-            }
-            CompositionLocalProvider(
-                LocalLayoutDirection provides direction,
-                LocalConfiguration provides configuration,
-                LocalContext provides localizedContext
-            ) {
-                FinancialTheme(darkTheme = darkTheme) {
-                    val navController = rememberNavController()
-                    Nav(navController = navController)
-                }
+            MonifyAppearance(this) {
+                val navController = rememberNavController()
+                Nav(navController = navController)
             }
         }
     }
 }
 
-
+@Composable
+internal fun MonifyAppearance(activity: ComponentActivity, content: @Composable () -> Unit) {
+    val darkTheme = when (AppAppearance.themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    val direction = if (AppAppearance.language == AppLanguage.PERSIAN) LayoutDirection.Rtl else LayoutDirection.Ltr
+    val systemConfiguration = LocalConfiguration.current
+    val locale = if (AppAppearance.language == AppLanguage.PERSIAN) Locale.forLanguageTag("fa") else Locale.ENGLISH
+    val configuration = remember(systemConfiguration, locale) {
+        Configuration(systemConfiguration).apply { setLocale(locale) }
+    }
+    val localizedContext = remember(activity, configuration) {
+        ContextThemeWrapper(activity, activity.theme).apply {
+            applyOverrideConfiguration(configuration)
+        }
+    }
+    CompositionLocalProvider(
+        LocalLayoutDirection provides direction,
+        LocalConfiguration provides configuration,
+        LocalContext provides localizedContext
+    ) {
+        FinancialTheme(darkTheme = darkTheme) { content() }
+    }
+}
 

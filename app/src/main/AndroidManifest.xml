@@ -33,6 +33,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name="dev.estaki.myFinancialApp.presentation.smsimport.SmsImportActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <receiver
             android:name="dev.estaki.myFinancialApp.SmsReceiver"
             android:exported="true"

@@ -39,7 +39,7 @@ internal fun PrivacyPolicyScreen() {
         )
         PrivacySection(
             title = if (persian) "خواندن و پردازش پیامک‌ها" else "Reading and processing SMS",
-            body = if (persian) "با اجازه شما، مانیفای متن، فرستنده و زمان پیامک‌های موجود و پیامک‌های جدید را روی همین دستگاه بررسی می‌کند تا پیامک‌های احتمالی تراکنش بانکی را شناسایی کند. تشخیص خودکار ممکن است اشتباه کند یا بعضی پیامک‌ها را نشناسد. محتوای سایر پیامک‌ها برای این تشخیص بررسی می‌شود، اما به‌عنوان تراکنش ذخیره نمی‌شود." else "With your permission, Monify checks the text, sender and time of existing and incoming SMS on this device to identify possible bank transactions. Automatic recognition can make mistakes or miss messages. Other messages are checked for this purpose but are not saved as transactions."
+            body = if (persian) "با اجازه شما، مانیفای متن، فرستنده و زمان پیامک‌های موجود و پیامک‌های جدید را روی همین دستگاه بررسی می‌کند تا پیامک‌های احتمالی تراکنش بانکی را شناسایی کند. تشخیص خودکار ممکن است اشتباه کند یا بعضی پیامک‌ها را نشناسد. سایر پیامک‌ها تنها در صورتی به‌عنوان تراکنش ذخیره می‌شوند که خودتان آن‌ها را بررسی و دستی ثبت کنید." else "With your permission, Monify checks the text, sender and time of existing and incoming SMS on this device to identify possible bank transactions. Automatic recognition can make mistakes or miss messages. Other messages are saved as transactions only when you review and add them manually."
         )
         PrivacySection(
             title = if (persian) "نگهداری اطلاعات مالی" else "Financial data storage",

@@ -56,6 +56,7 @@ import dev.estaki.monify.R
 import dev.estaki.ui_utils.AppAppearance
 import dev.estaki.ui_utils.AppLanguage
 import dev.estaki.ui_utils.ThemeMode
+import dev.estaki.myFinancialApp.presentation.smsimport.SmsImportActivity
 
 @Composable
 internal fun AppearanceSettings(onDismiss: () -> Unit, onPrivacyClick: () -> Unit) {
@@ -122,6 +123,14 @@ internal fun AppearanceSettings(onDismiss: () -> Unit, onPrivacyClick: () -> Uni
                             onClick = { AppAppearance.selectThemeMode(ThemeMode.DARK) }
                         )
                     }
+                    SettingsLink(
+                        title = if (persian) "ورود پیامک از فرستنده" else "Import messages by sender",
+                        subtitle = if (persian) "انتخاب فرستنده و بررسی پیامک‌ها" else "Choose a sender and review messages",
+                        onClick = {
+                            context.startActivity(Intent(context, SmsImportActivity::class.java))
+                            onDismiss()
+                        }
+                    )
                     SettingsLink(
                         title = if (persian) "اعلان‌ها" else "Notifications",
                         subtitle = if (persian) "مدیریت اجازه نمایش اعلان" else "Manage notification permission",
